@@ -1,0 +1,20 @@
+[PROJECT]
+Target=Sensores.hex
+Processor_Text=PIC18F45K50
+CCSVersion=5.015
+Compiler=PCH
+[Target Data]
+FileList=Sensores.c
+[Directories]
+Include=C:\Program Files (x86)\PICC\Devices\;C:\Program Files (x86)\PICC\Drivers\
+[Sensores.c]
+Type=4
+[mru-list]
+1=Sensores.c
+[Opened Files]
+1=Sensores.c
+2=max6675.c
+3=
+[Units]
+Count=1
+1=Sensores (main)

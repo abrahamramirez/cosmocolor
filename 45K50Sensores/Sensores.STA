@@ -1,0 +1,85 @@
+
+ROM used:   3330/32768 (10%)
+            3330/32768 (10%) including unused fragments
+
+            0.6 Average locations per line
+            3.8 Average locations per statement
+
+RAM used:   74/2048 (4%) at main() level
+            100/2048 (5%) worst case
+
+Stack used: 6 worst case (6 in main + 0 for interrupts)
+Stack size: 31
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+   56    17   2  Sensores.c
+  944     0   0  C:\Program Files (x86)\PICC\Devices\18F45K50.h
+ 1351   359  40  C:\Program Files (x86)\PICC\Drivers\stdlib.h
+   32     0   0  C:\Program Files (x86)\PICC\Drivers\stddef.h
+  423   125  14  C:\Program Files (x86)\PICC\Drivers\string.h
+   28     0   0  C:\Program Files (x86)\PICC\Drivers\ctype.h
+  456    84   9  C:\Program Files (x86)\PICC\Drivers\lcd.c
+   79    18   2  max6675.c
+ 2229   257  29  C:\Program Files (x86)\PICC\Drivers\math.h
+   62    28   3  HMC5883.c
+----- -----
+ 5660   888 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0     40   1    1             @delay_ms1
+0    244   4   11             @MULFF
+0     56   1    2             @ITOF
+0    348   5   14  1815 10.5  @DIVFF
+0     70   1    3   596  5.9  lcd_read_byte
+0     12   0    0    59  4.2  lcd_read_nibble
+0     32   0    1   179  3.3  lcd_send_nibble
+0     58   1    3   460  4.7  lcd_send_byte
+0    120   2    6   814  7.2  lcd_init
+0     34   1    4   208  6.3  lcd_gotoxy
+0     80   1    1   354  4.7  lcd_putc
+0     16   0    0    54  1.2  init_TC
+0     72   1    3   351  4.7  read_TC
+0     40   1    2    48  2.1  sortout
+0     58   1    6    43  1.8  toFloat_TC
+0     50   1    2    70  1.1  getTemp
+0    104   2    3   102  1.8  @I2C_READ_1
+0    108   2    1   102  1.8  @I2C_WRITE_1
+0     88   1    2   102  1.8  hmc5883_write
+0    146   2    2   167  2.4  hmc5883_read
+0     48   1    0   141  1.8  hmc5883_init
+0     88   1    0   485  2.9  hmc5883_getXYZ
+0    374   6    4   480  3.2  MAIN
+0    242   4    9   932  4.3  @PRINTF_LD_949
+0     10   0    0   932  4.3  @const1129
+0     28   0    1   932  4.3  @SPRINTF
+0     64   1    5             @FTOSD
+0    142   2   13             @DIV3232
+0    378   6   13             @PRINTF_L32D_1131FPFPF
+0     32   0    3             @PSTRINGCN_1131
+0     30   0    0             @const1143
+0     36   1    2             @PSTRINGC_9600_31766_31767
+0     40   1    2             @PSTRINGR_9600_31766_31767
+0     38   1    2             @PSTRINGR_949
+ Inline         0             @cinit1
+
+Program metrics:
+    Functions               23
+    Statements              888
+    Comments                1344
+    Volume (V)              16049
+    Difficulty (D)          84.6
+    Effort to implement (E) 1358416
+    Time to implement (T)   20 hours, 58 minutes
+    Est Delivered Bugs (B)  4
+    Cyclomatic Complexity   22
+    Maintainability (MI)    44
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-07FFE  3326  29438  
+
+
+

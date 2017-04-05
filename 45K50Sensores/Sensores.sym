@@ -1,0 +1,211 @@
+000     @SCRATCH
+001     @SCRATCH
+001     _RETURN_
+002     @SCRATCH
+003     @SCRATCH
+004-005 strtok.save
+006-009 _Randseed
+00A.0   thermocouple_error
+00B-010 M_data
+011-012 x
+013-014 y
+015-016 z
+017-01C data
+01D-01E adc
+01F-022 val
+023     i
+024-043 msg
+044-045 @sprintf_string
+046     lcd_init.i
+046-049 atan2.y
+046-047 @PRINTF_LD_949.P1
+046     hmc5883_read.add
+046     hmc5883_write.add
+046     read_TC.i
+046     getTemp.@SCRATCH1
+046     MAIN.@SCRATCH1
+046     @PSTRINGC_9600_31766_31767.@SCRATCH1
+046     @PSTRINGR_9600_31766_31767.@SCRATCH1
+046     @PSTRINGR_949.@SCRATCH1
+047-048 read_TC.data
+047-04A lcd_init.LCD_INIT_STRING
+047     hmc5883_read.retval
+047     hmc5883_write.data
+047     getTemp.@SCRATCH2
+047     MAIN.@SCRATCH2
+047     @PSTRINGC_9600_31766_31767.@SCRATCH2
+047     @PSTRINGR_9600_31766_31767.@SCRATCH2
+047     @PSTRINGR_949.@SCRATCH2
+048-049 sortout.raw
+048     @I2C_READ_1.P1
+048-049 toFloat_TC.tmp
+048     @I2C_WRITE_1.P1
+048     MAIN.@SCRATCH3
+048     @PRINTF_LD_949.@SCRATCH1
+049     @I2C_READ_1.@SCRATCH1
+049     MAIN.@SCRATCH4
+049     @PRINTF_LD_949.@SCRATCH2
+04A-04D atan2.x
+04A     @PSTRINGCN_1131.P1
+04A-04B @ITOF.P2
+04A-04D @PRINTF_L32D_1131FPFPF.P3
+04A     toFloat_TC.@SCRATCH1
+04A     @I2C_READ_1.@SCRATCH2
+04A     @PRINTF_LD_949.@SCRATCH3
+04B     lcd_init.@SCRATCH1
+04B     toFloat_TC.@SCRATCH2
+04B     @PRINTF_LD_949.@SCRATCH4
+04B     @PSTRINGCN_1131.@SCRATCH1
+04C     toFloat_TC.@SCRATCH3
+04C     @PRINTF_LD_949.@SCRATCH5
+04C     @PSTRINGCN_1131.@SCRATCH2
+04D     toFloat_TC.@SCRATCH4
+04D     @PRINTF_LD_949.@SCRATCH6
+04E     @PRINTF_L32D_1131FPFPF.P1
+04E-051 @DIVFF.P2
+04E-051 atan2.z
+04E     @PRINTF_LD_949.@SCRATCH7
+04F     lcd_putc.c
+04F     @PRINTF_L32D_1131FPFPF.@SCRATCH1
+050     @delay_ms1.P1
+050     lcd_gotoxy.x
+050     @PRINTF_L32D_1131FPFPF.@SCRATCH2
+051     lcd_gotoxy.y
+051     @PRINTF_L32D_1131FPFPF.@SCRATCH3
+052.0   atan2.sign
+052-055 @DIVFF.P1
+052     lcd_gotoxy.address
+052     @PRINTF_L32D_1131FPFPF.@SCRATCH4
+053     atan2.quad
+053     lcd_gotoxy.@SCRATCH1
+053     @PRINTF_L32D_1131FPFPF.@SCRATCH5
+054     lcd_send_byte.address
+054     @PRINTF_L32D_1131FPFPF.@SCRATCH6
+055     lcd_send_byte.n
+055     @PRINTF_L32D_1131FPFPF.@SCRATCH7
+056     lcd_read_byte.low
+056     @DIVFF.@SCRATCH1
+056     lcd_send_byte.@SCRATCH1
+056     @PRINTF_L32D_1131FPFPF.@SCRATCH8
+057     @SPRINTF.P1
+057-05A @DIV3232.P2
+057-05A @FTOSD.P3
+057     lcd_read_byte.high
+057     lcd_send_nibble.n
+057-05A @MULFF.P1
+057     @DIVFF.@SCRATCH2
+058     @DIVFF.@SCRATCH3
+058     lcd_read_byte.@SCRATCH1
+059     @DIVFF.@SCRATCH4
+05A     @DIVFF.@SCRATCH5
+05B-05E @MULFF.P1
+05B-05E @DIV3232.P2
+05B     @DIVFF.@SCRATCH6
+05B     @FTOSD.@SCRATCH1
+05F     @MULFF.@SCRATCH1
+05F     @DIV3232.@SCRATCH1
+060     @MULFF.@SCRATCH2
+060     @DIV3232.@SCRATCH2
+061     @MULFF.@SCRATCH3
+061     @DIV3232.@SCRATCH3
+062     @DIV3232.@SCRATCH4
+063     @DIV3232.@SCRATCH5
+F78.6   C2OUT
+F79.6   C1OUT
+F83     lcd
+F8C     lcdlat
+F95     lcdtris
+F98     CCP_2_LOW
+F98     CCP_2
+F99     CCP_2_HIGH
+FBE     CCP_1
+FBE     CCP_1_LOW
+FBF     CCP_1_HIGH
+FE1-FE2 @WRITE_PACKED_MEMORY.P1
+FE1-FE2 @READ_PACKED_MEMORY.P2
+FE9-FEA @WRITE_PACKED_MEMORY.P1
+FE9-FEA @READ_PACKED_MEMORY.P2
+FE9-FEA @WRITE_PROGRAM_MEMORY.P3
+FE9-FEA @READ_PROGRAM_MEMORY.P4
+FF6-FF8 @WRITE_PROGRAM_MEMORY.P1
+FF6-FF8 @READ_PROGRAM_MEMORY.P2
+
+ROM Allocation:
+000004  @const1129.call
+00000E  @const1143.call
+00002C  @delay_ms1
+000054  lcd_send_nibble
+000074  lcd_read_nibble
+000080  lcd_read_byte
+0000C6  lcd_send_byte
+000100  lcd_init
+000178  @I2C_WRITE_1
+0001E4  hmc5883_write
+00023C  hmc5883_init
+00026C  @I2C_READ_1
+0002D4  hmc5883_read
+000366  hmc5883_getXYZ
+0003BE  lcd_gotoxy
+0003E0  lcd_putc
+000430  @PRINTF_LD_949
+000522  init_TC
+000532  read_TC
+00057A  sortout
+0005A2  @ITOF
+0005DA  @DIVFF
+000736  toFloat_TC
+000770  getTemp
+0007A2  @MULFF
+000896  @FTOSD
+0008D6  @DIV3232
+000964  @SPRINTF
+000980  @PRINTF_L32D_1131FPFPF
+000AFA  @PSTRINGCN_1131
+000B1A  @PSTRINGC_9600_31766_31767
+000B3E  @PSTRINGR_9600_31766_31767
+000B66  @PSTRINGR_949
+000B8C  MAIN
+000B8C  @cinit1
+000BE6  @cinit2
+0136  StrtoulGO
+0136  StrtolGO
+
+Project Directory:
+    Z:\Users\abraham\Desktop\Desarrollo\Proyectos\Cosmocolor\Código Fuente\45K50Sensores\
+
+Project Files:
+    Sensores.c                                              [16-ene.-17 16:22  CRC=02368F95]
+    C:\Program Files (x86)\PICC\Devices\18F45K50.h          [12-nov.-13 14:35  CRC=FE5C2EB4]
+    C:\Program Files (x86)\PICC\Drivers\stdlib.h            [08-jun.-11 14:39  CRC=0B6669CF]
+    C:\Program Files (x86)\PICC\Drivers\stddef.h            [16-jul.-10 09:27  CRC=897CEC6C]
+    C:\Program Files (x86)\PICC\Drivers\string.h            [14-jul.-11 10:13  CRC=23EDEC8F]
+    C:\Program Files (x86)\PICC\Drivers\ctype.h             [03-ene.-08 13:55  CRC=2D1F019F]
+    C:\Program Files (x86)\PICC\Drivers\lcd.c               [19-sep.-13 15:38  CRC=D1A6378A]
+    max6675.c                                               [16-ene.-17 16:22  CRC=C3849C0C]
+    C:\Program Files (x86)\PICC\Drivers\math.h              [28-sep.-12 11:35  CRC=546412C9]
+    HMC5883.c                                               [16-ene.-17 15:16  CRC=AE9BE703]
+
+Source signature=2D49B717
+
+Units:
+    Sensores (main)
+
+Compiler Settings:
+    Processor:      PIC18F45K50
+    Pointer Size:   16
+    ADC Range:      0-1023
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+
+Output Files:
+    XREF file:   Sensores.xsym
+    Errors:      Sensores.err
+    Ext Symbols: Sensores.esym
+    INHX32:      Sensores.hex
+    Symbols:     Sensores.sym
+    List:        Sensores.lst
+    Debug/COFF:  Sensores.cof
+    Project:     Sensores.ccspjt
+    Call Tree:   Sensores.tre
+    Statistics:  Sensores.STA

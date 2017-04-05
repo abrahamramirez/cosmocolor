@@ -1,0 +1,55 @@
+#include <18F45K50.h>      
+#device adc=10             
+#fuses NOCPUDIV, HSH, PRIMARY, NOIESO, NOFCMEN
+#use delay(internal=48MHz) 
+#use RS232(baud=9600, parity=N, xmit=PIN_C6, rcv=PIN_C7, bits=8)
+#include <stdlib.h>        
+#include <lcd.c> 
+
+#include "max6675.c"
+#include <math.h> 
+
+#include "HMC5883.c" 
+
+int16 adc = 0;
+int32 val = 0;
+int i = 0;
+char msg[32]; 
+
+
+void main(){  
+   lcd_init(); 
+   hmc5883_init(); 
+   
+   setup_adc_ports(sAN0);
+   setup_adc(ADC_CLOCK_INTERNAL);               
+   set_adc_channel(0); 
+   
+  
+   while(1) { 
+      hmc5883_getXYZ();
+      
+      lcd_gotoxy(1,1);
+      printf(lcd_putc,"%Ld, %Ld, %Ld",x, y, z);
+      
+   
+//!      for(i = 0; i < 30; i++){
+//!         adc = read_adc(ADC_START_AND_READ);
+//!         val += adc;
+//!      }
+//!      val /= 30;
+//!      lcd_gotoxy(1,1);   
+//!      printf(lcd_putc, "%Lu   ", val); 
+//!      delay_ms(200);
+      
+      sprintf(msg,"%01.2f oC", getTemp(), 0xB0); 
+      if(thermocouple_error) 
+         printf("Thermocouple not connected\r\n");    
+      else 
+         printf("%s",msg); 
+      lcd_gotoxy(1,2);   
+      printf(lcd_putc, "%s", msg); 
+      
+      delay_ms(500);
+   } 
+}
