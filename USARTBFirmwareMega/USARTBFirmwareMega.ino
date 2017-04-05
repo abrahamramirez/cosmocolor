@@ -429,35 +429,25 @@ void sendCmdsAndWait(){
  * Retorna. Int, número de comandos añadidos al array.
  **/
 void makeCommands(String cmd){
-  // ------------------------------------
-  //       Comandos de bajo nivel
-  // ------------------------------------
-  // 
-  // ------ Cambiar estado salidas ------
-  // Inicio  PIC  Pto  Valor(8 bits)  Fin
-  //    @     A    D       015         # 
-  // ------------------------------------
-  //
-  //
   String method = "";     // Método de alto nivel procedente de cualquier medio UART
   String smsNum = "";
   String smsText = "";
-  String sValAD = "";
-  String sValBD = "";
-  String outputAD = "@AD";
-  String outputBD = "@BD";
-  String inputAD = "@VPAD#";
-  String inputBD = "@VPBD#";
+  String output = "";
+  String str = "";
+  String sTemp = "";
+  String sTemp2 = ""; 
   String endChar = "#";
-  String AD = "";         // Argumentos del PIC A, Puerto D 
-  String BD = "";
-  long valAD = 0L;  
-  long valBD = 0L;      
+  String inputA = "@VA#";
+  String inputB = "@VB#";
   int temp = 0;  
   int index = 0;          // Índice del array de comandos de bajo nivel
+  int val = 0;
+  int val2 = 0;
   String s = "";
   String mIndex = "";      
   String mVal = "";
+  String sBit = "";
+  String sVal = "";
   int iIndex = 0;
   int iVal = 0;
 
@@ -479,50 +469,87 @@ void makeCommands(String cmd){
       method.replace("setAllOut(", "");
       method.replace(")", "");
       
-      AD = method.substring(0, 8);
-      BD = method.substring(8, 16);
+      sTemp = method.substring(0, 8);
+      sTemp2 = method.substring(8, 16);
 
       // Convertir binario a decimal
-      valAD = strtol(AD.c_str(), NULL, 2);  
-      valBD = strtol(BD.c_str(), NULL, 2); 
+      val = strtol(sTemp.c_str(), NULL, 2);  
+      val2 = strtol(sTemp2.c_str(), NULL, 2); 
 
       // Convertir decimal a String para componer comandos de bajo nivel
-      if(valAD < 10){
-        s = String(valAD);
-        sValAD.concat("00");
-        sValAD.concat(s);
-      }
-      else if(valAD < 100){
-        s = String(valAD);
-        sValAD.concat("0");
-        sValAD.concat(s);
-      }
-      else
-        sValAD = String(valAD);
-            
-      if(valBD < 10){
-        s = String(valBD);
-        sValBD.concat("00");
-        sValBD.concat(s);
-      }
-      else if(valBD < 100){
-        s = String(valBD);
-        sValBD.concat("0");
-        sValBD.concat(s);
-      }
-      else
-        sValBD = String(valBD);
+      s = String(val);
+      sTemp = completeZeros(s, 3);
+      s = String(val2);
+      sTemp2 = completeZeros(s, 3);
            
       // Añadir comandos de bajo nivel a array
-      outputAD.concat(sValAD);
-      outputAD.concat(endChar);
-      cmdsTo485[index] = outputAD;
+      output = "@A" + sTemp + endChar;
+      cmdsTo485[index] = output;
+      setSourceCmd(index);
       index++;
 
-      outputBD.concat(sValBD);
-      outputBD.concat(endChar);
-      cmdsTo485[index] = outputBD;
+      output = "@B" + sTemp + endChar;
+      cmdsTo485[index] = output;
+      setSourceCmd(index);
       index++;
+    }
+
+    // -----------------------------------------
+    // Validar función: getOut(int bit)
+    // -----------------------------------------
+    count = ms.GlobalMatch("getOut%([0-9]+%)", match_callback); 
+    // Traducir método a comandos de bajo nivel
+    if(count == 1){    
+      // Extraer argumentos del método 
+      method = String(cCmd);
+      method.trim();                    
+      method.replace("\r", "");
+      method.replace("\n", "");
+      method.replace("getOut(", "");
+      method.replace(")", "");
+
+      // Extraer argumentos del método y completar a 2 cifras
+      sTemp = completeZeros(method, 2);
+           
+      // Añadir comandos de bajo nivel a array
+      cmdsTo485[index] = "@G" + sTemp + "#";
+      setSourceCmd(index);
+//      index++;
+    }
+
+    // ------------------------------------------------
+    // Validar función: setOut(int salida, int valor)
+    // ------------------------------------------------
+    count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
+    // Traducir método a comandos de bajo nivel
+    if(count == 1){    
+      Serial.println("*********** setOut(int salida, int valor)");
+      // Extraer argumentos del método 
+      method = String(cCmd);
+      method.trim();                    
+      method.replace("\r", "");
+      method.replace("\n", "");
+      method.replace("setOut(", "");
+      method.replace(")", "");
+      
+      for(int i = 0; i <= method.length(); i++){
+          char ch = method.charAt(i);
+          if(ch != ','){
+            sBit.concat(ch);
+          }
+          else  
+            break;
+      }
+      sVal = method.substring(method.length() - 1, method.length());
+      
+      // Añadir comandos de bajo nivel a array
+      int bit1 = sBit.toInt();
+      int val = sVal.toInt();
+
+      sTemp = completeZeros(sBit, 2);
+
+      str = "@S" + sTemp + val + endChar;
+      cmdsTo485[index] = str;
     }
 
     // ----------------------------------------
@@ -532,24 +559,75 @@ void makeCommands(String cmd){
     if(count == 1){
       Serial.println("********* getAllOut()");
       index = 0;
-      cmdsTo485[index] = "@VPAD#";
+      cmdsTo485[index] = inputA;
+      setSourceCmd(index);
       index++;
-      cmdsTo485[index] = "@VPBD#";
+      
+      cmdsTo485[index] = inputB;
+      setSourceCmd(index);
       index++;
     }
 
-    // ------------------------------------------------
-    // Validar función: setOut(int outIndex, int val)
-    // ------------------------------------------------
-    count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback);   
+    // ----------------------------------------
+    // Validar función: getAllIn()
+    // ----------------------------------------
+    count = ms.GlobalMatch("getAllIn%(%)", match_callback);   
     if(count == 1){
-      
-      
-      
-      
-      
+      Serial.println("********* getAllIn()");
+      index = 0;
+      cmdsTo485[index] = "@VPCD#";
+      setSourceCmd(index);
+      index++;
     }
-  }
+
+    // --------------------------------------------------
+    // Validar función: sendMsg(String msg, String num)
+    // --------------------------------------------------
+    count = ms.GlobalMatch("sendMsg%(%\"[%a%d%p%s]+%\",\"[0-9]+\"%)", match_callback); 
+    if(count == 1){
+      Serial.println("******** sendMsg()");
+      // Extraer argumentos del método 
+      method = String(cCmd);
+      method.trim();                    
+      method.replace("\r", "");
+      method.replace("\n", "");
+      method.replace("sendMsg(", "");
+      method.replace(")", "");
+      method.replace("\"", "");
+      
+      for(int i = 0; i <= method.length(); i++){
+          char ch = method.charAt(i);
+          if(ch != ','){
+            smsText.concat(ch);
+          }
+          else  
+            break;
+      }
+      smsNum = method.substring(method.length() - 10, method.length());
+      Serial.println(smsNum);
+      Serial.println(smsText);
+      sendSms(smsText.c_str(), smsNum.c_str());
+
+      if(isWifi){
+        sendWifiData(ip, port, ok);
+      }
+      else if(isBt){
+        Serial3.println(ok);
+      }
+    }
+
+    // ----------------------------------------
+    // Validar función: getGpsPos()
+    // ----------------------------------------
+    count = ms.GlobalMatch("getGpsPos%(%)", match_callback);   
+    if(count == 1){
+      Serial.println("********* getGpsPos()");
+//      getGpsInfo();
+      index = 0;
+      cmdsTo485[index] = "@ADC00#";
+      index++;
+    }
+  } 
 }
 
 
