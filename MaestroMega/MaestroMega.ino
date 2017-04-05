@@ -137,13 +137,15 @@ void loop() {
     readI2C(0xA0);
     delay(100);
     Serial1.print(resultado);
-    Serial.print(resultado);
+    Serial2.println(resultado);
+    Serial.println(resultado);
   }
   else if(commands.equals("@VB")){
     readI2C(0xB0);
     delay(100);
     Serial1.print(resultado);
-    Serial.print(resultado);
+    Serial2.println(resultado);
+    Serial.println(resultado);
   }
   // --------------------------------
   // Comandos para alterar bits

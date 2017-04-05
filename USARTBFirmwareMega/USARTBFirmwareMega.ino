@@ -485,12 +485,10 @@ void makeCommands(String cmd){
       // Añadir comandos de bajo nivel a array
       output = "@A" + sTemp + endChar;
       cmdsTo485[index] = output;
-      setSourceCmd(index);
       index++;
 
       output = "@B" + sTemp + endChar;
       cmdsTo485[index] = output;
-      setSourceCmd(index);
       index++;
     }
 
@@ -513,7 +511,6 @@ void makeCommands(String cmd){
            
       // Añadir comandos de bajo nivel a array
       cmdsTo485[index] = "@G" + sTemp + "#";
-      setSourceCmd(index);
 //      index++;
     }
 
@@ -560,11 +557,9 @@ void makeCommands(String cmd){
       Serial.println("********* getAllOut()");
       index = 0;
       cmdsTo485[index] = inputA;
-      setSourceCmd(index);
       index++;
       
       cmdsTo485[index] = inputB;
-      setSourceCmd(index);
       index++;
     }
 
@@ -576,7 +571,6 @@ void makeCommands(String cmd){
       Serial.println("********* getAllIn()");
       index = 0;
       cmdsTo485[index] = "@VPCD#";
-      setSourceCmd(index);
       index++;
     }
 
@@ -585,35 +579,35 @@ void makeCommands(String cmd){
     // --------------------------------------------------
     count = ms.GlobalMatch("sendMsg%(%\"[%a%d%p%s]+%\",\"[0-9]+\"%)", match_callback); 
     if(count == 1){
-      Serial.println("******** sendMsg()");
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("sendMsg(", "");
-      method.replace(")", "");
-      method.replace("\"", "");
-      
-      for(int i = 0; i <= method.length(); i++){
-          char ch = method.charAt(i);
-          if(ch != ','){
-            smsText.concat(ch);
-          }
-          else  
-            break;
-      }
-      smsNum = method.substring(method.length() - 10, method.length());
-      Serial.println(smsNum);
-      Serial.println(smsText);
-      sendSms(smsText.c_str(), smsNum.c_str());
-
-      if(isWifi){
-        sendWifiData(ip, port, ok);
-      }
-      else if(isBt){
-        Serial3.println(ok);
-      }
+//      Serial.println("******** sendMsg()");
+//      // Extraer argumentos del método 
+//      method = String(cCmd);
+//      method.trim();                    
+//      method.replace("\r", "");
+//      method.replace("\n", "");
+//      method.replace("sendMsg(", "");
+//      method.replace(")", "");
+//      method.replace("\"", "");
+//      
+//      for(int i = 0; i <= method.length(); i++){
+//          char ch = method.charAt(i);
+//          if(ch != ','){
+//            smsText.concat(ch);
+//          }
+//          else  
+//            break;
+//      }
+//      smsNum = method.substring(method.length() - 10, method.length());
+//      Serial.println(smsNum);
+//      Serial.println(smsText);
+//      sendSms(smsText.c_str(), smsNum.c_str());
+//
+//      if(isWifi){
+//        sendWifiData(ip, port, ok);
+//      }
+//      else if(isBt){
+//        Serial3.println(ok);
+//      }
     }
 
     // ----------------------------------------
@@ -628,6 +622,39 @@ void makeCommands(String cmd){
       index++;
     }
   } 
+}
+
+
+/**
+ * Completa tantos ceros a la izquierda de un string que contiene
+ * un número como se indique.
+ * 
+ * String sNum. String que contiene un número
+ * int digits. Número de dígitos de la cifra final.
+ **/
+String completeZeros(String sNum, int digits){
+  int num = sNum.toInt();
+  String s = "";
+  String t = "";
+
+  if(digits == 2){
+    if(num < 10){
+      t = "0" + sNum;
+    }
+    else 
+      t = sNum;
+  }
+  else if(digits == 3){
+    if(num < 10){
+      t = "00" + sNum;
+    }
+    else if(num < 100){
+      t = "0" + sNum;
+    }
+    else 
+      t = sNum;
+  }
+  return t;
 }
 
 
