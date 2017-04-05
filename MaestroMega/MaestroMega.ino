@@ -1,27 +1,34 @@
 #include <SoftwareSerial.h>
 #include <Wire.h>
 const int ledPin =  13;      // Numero del pin para el Led
-const int ENT12V1 =  22;      //
-const int ENT12V2 =  23;      //
-const int ENT12V3 =  24;      //
-const int ENT12V4 =  25;      //
-const int ENT12V5 =  26;      //
-const int ENT12V6 =  27;      //
-const int ENT12V7 =  28;      //
-const int ENT24V1 =  29;      //
-const int ENT24V2 =  30;      //
-const int ENT24V3 =  31;      //
-const int ENT24V4 =  32;      //
-const int ENT24V5 =  33;      //
-const int ENT24V6 =  34;      //
-const int ENT24V7 =  35;      //
-const int ENTTL1 =  36;      //
-const int ENTTL2 =  37;      //
-const int ENTTL3 =  38;      //
-const int ENTTL4 =  39;      //
-const int ENTTL5 =  40;      //
-const int ENTTL6 =  41;      //
-const int ENTTL7 =  42;      //
+
+// Entradas a +12V nativas
+const int in12V1 =  22;      
+const int in12V2 =  23;      
+const int in12V3 =  24;      
+const int in12V4 =  25;      
+const int in12V5 =  26;      
+const int in12V6 =  27;      
+const int in12V7 =  28;      
+
+// Entradas a +24V nativas
+const int in24V1 =  29;      
+const int in24V2 =  30;      
+const int in24V3 =  31;      
+const int in24V4 =  32;      
+const int in24V5 =  33;      
+const int in24V6 =  34;      
+const int in24V7 =  35;      
+
+// Entradas +5V nativas
+const int in5V1 =  36;      
+const int in5V2 =  37;      
+const int in5V3 =  38;      
+const int in5V4 =  39;      
+const int in5V5 =  40;    
+const int in5V6 =  41;      
+const int in5V7 =  42;      
+
 byte BITS0 = 0;
 byte BITS1 = 0;
 byte BITS2 = 0;
@@ -60,27 +67,28 @@ void setup() {
   Serial1.begin(9600);
   Serial2.begin(9600);
   pinMode(ledPin, OUTPUT);    //inicializamos el pin del Led como salida
-  pinMode(ENT12V1, INPUT);
-  pinMode(ENT12V2, INPUT);
-  pinMode(ENT12V3, INPUT);
-  pinMode(ENT12V4, INPUT);
-  pinMode(ENT12V5, INPUT);
-  pinMode(ENT12V6, INPUT);
-  pinMode(ENT12V7, INPUT);
-  pinMode(ENT24V1, INPUT);
-  pinMode(ENT24V2, INPUT);
-  pinMode(ENT24V3, INPUT);
-  pinMode(ENT24V4, INPUT);
-  pinMode(ENT24V5, INPUT);
-  pinMode(ENT24V6, INPUT);
-  pinMode(ENT24V7, INPUT);
-  pinMode(ENTTL1, INPUT);
-  pinMode(ENTTL2, INPUT);
-  pinMode(ENTTL3, INPUT);
-  pinMode(ENTTL4, INPUT);
-  pinMode(ENTTL5, INPUT);
-  pinMode(ENTTL6, INPUT);
-  pinMode(ENTTL7, INPUT);
+  pinMode(in12V1, INPUT);
+  pinMode(in12V2, INPUT);
+  pinMode(in12V3, INPUT);
+  pinMode(in12V4, INPUT);
+  pinMode(in12V5, INPUT);
+  pinMode(in12V6, INPUT);
+  pinMode(in12V7, INPUT);
+  pinMode(in24V1, INPUT);
+  pinMode(in24V2, INPUT);
+  pinMode(in24V3, INPUT);
+  pinMode(in24V4, INPUT);
+  pinMode(in24V5, INPUT);
+  pinMode(in24V6, INPUT);
+  pinMode(in24V7, INPUT);
+  pinMode(in5V1, INPUT);
+  pinMode(in5V2, INPUT);
+  pinMode(in5V3, INPUT);
+  pinMode(in5V4, INPUT);
+  pinMode(in5V5, INPUT);
+  pinMode(in5V6, INPUT);
+  pinMode(in5V7, INPUT);
+  // Inicializar salidas inicialmente apagadas
   writeI2C(0XA0, 0);
   writeI2C(0XB0, 0);
 }
@@ -90,6 +98,8 @@ String temp = "";
 String temp1 = "";
 int bit1 = 0;
 int val = 0;
+boolean isUsartA = false;
+boolean isUsartB = false;
 
 
 // ---------------------------------------
@@ -100,6 +110,8 @@ void serialEvent1() {
   Serial.print("Serial1 data: ");
   Serial.print(commands);
   Serial.println();
+  isUsartA = true;
+  isUsartB = false;
 }
 
 
@@ -111,12 +123,14 @@ void serialEvent2() {
   Serial.print("Serial2 data: ");
   Serial.print(commands);
   Serial.println();
+  isUsartA = false;
+  isUsartB = true;
 }
 
 
 void loop() {
   // --------------------------------
-  // Comandos para alterar puertos
+  // Comandos para alterar salidas
   // --------------------------------
   if(commands.startsWith("@A")){
     temp = commands.substring(2);
@@ -131,7 +145,7 @@ void loop() {
     writeI2C(direccion, dato);
   }
   // --------------------------------
-  // Comandos para leer puertos
+  // Comandos para leer salidas
   // --------------------------------
   else if(commands.equals("@VA")){
     readI2C(0xA0);
@@ -164,6 +178,9 @@ void loop() {
     temp = commands.substring(2, 4);
     bit1 = temp.toInt();
     Serial1.print(getBit(bit1));
+    Serial2.println(getBit(bit1));
+    Serial.println(getBit(bit1));
+    
   }
  
   commands = "";
@@ -307,6 +324,15 @@ boolean getBit(int bit1){
     resp = bitRead(port, bit1 - 8);
     delay(100);
   }
+
+  // Micro Mtro: entradas +12V: 22-28
+  // Micro Mtro: entradas +24V: 29-35
+  // Micro Mtro: entradas +5V:  36-42
+  else if(bit1 >= 22 && bit1 <= 42){
+    resp = digitalRead(bit1);
+    delay(100);
+  }
+  
   return resp;
 }
 
@@ -425,35 +451,35 @@ void ENTRADASANALOGICAS(void)
 }
 void ENTRADASTTL(void)
 {
-  BIT14 = digitalRead(ENTTL1);
-  BIT15 = digitalRead(ENTTL2);
-  BIT16 = digitalRead(ENTTL3);
-  BIT17 = digitalRead(ENTTL4);
-  BIT18 = digitalRead(ENTTL5);
-  BIT19 = digitalRead(ENTTL6);
-  BIT20 = digitalRead(ENTTL7);
+  BIT14 = digitalRead(in5V1);
+  BIT15 = digitalRead(in5V2);
+  BIT16 = digitalRead(in5V3);
+  BIT17 = digitalRead(in5V4);
+  BIT18 = digitalRead(in5V5);
+  BIT19 = digitalRead(in5V6);
+  BIT20 = digitalRead(in5V7);
   delay(1000);
 }
 void ENTRADAS12(void)
 {
-  BIT0 = digitalRead(ENT12V1); //Lectura de sensores DIGITALES
-  BIT1 = digitalRead(ENT12V2);
-  BIT2 = digitalRead(ENT12V3);
-  BIT3 = digitalRead(ENT12V4);
-  BIT4 = digitalRead(ENT12V5);
-  BIT5 = digitalRead(ENT12V6);
-  BIT6 = digitalRead(ENT12V7);
+  BIT0 = digitalRead(in12V1); //Lectura de sensores DIGITALES
+  BIT1 = digitalRead(in12V2);
+  BIT2 = digitalRead(in12V3);
+  BIT3 = digitalRead(in12V4);
+  BIT4 = digitalRead(in12V5);
+  BIT5 = digitalRead(in12V6);
+  BIT6 = digitalRead(in12V7);
   delay(1000);
 }
 void ENTRADAS24(void)
 {
-  BIT7 = digitalRead(ENT24V1);
-  BIT8 = digitalRead(ENT24V2);
-  BIT9 = digitalRead(ENT24V3);
-  BIT10 = digitalRead(ENT24V4);
-  BIT11 = digitalRead(ENT24V5);
-  BIT12 = digitalRead(ENT24V6);
-  BIT13 = digitalRead(ENT24V7);
+  BIT7 = digitalRead(in24V1);
+  BIT8 = digitalRead(in24V2);
+  BIT9 = digitalRead(in24V3);
+  BIT10 = digitalRead(in24V4);
+  BIT11 = digitalRead(in24V5);
+  BIT12 = digitalRead(in24V6);
+  BIT13 = digitalRead(in24V7);
   delay(1000);
 }
 void writeI2C(int direccion, int dato)

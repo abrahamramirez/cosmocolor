@@ -102,9 +102,9 @@ void setup() {
   gpsPort.begin(9600);
   port485.begin(9600);
 
-  Serial.println("------------------");
-  Serial.println(" Inicializando... ");
-  Serial.println("------------------");
+  Serial.println("--------------------------");
+  Serial.println(" Inicializando USART A... ");
+  Serial.println("--------------------------");
   
   
   Serial3.println(" ");
@@ -115,7 +115,7 @@ void setup() {
   Serial3.println(" ");
   Serial3.println(" ");
 
-//  configGsm();
+  configGsm();
   
   delay(3000);
   Serial.println("");
@@ -126,11 +126,6 @@ void setup() {
   delay(1000);
   Serial.println();
   Serial.println("<<< Escuchando puertos.... >>>");
-
-//  port485.print("@S000#");
-//  delay(300);
-//  port485.print("@S010#");
-//  delay(300);
 
 }
 
@@ -430,8 +425,8 @@ void makeCommands(String cmd){
       // Añadir comandos de bajo nivel a array
       cmdsTo485[index] = "@G" + sTemp + "#";
       setSourceCmd(index);
-//      index++;
     }
+    
 
     // ------------------------------------------------
     // Validar función: setOut(int salida, int valor)
