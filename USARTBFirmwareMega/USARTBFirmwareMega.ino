@@ -409,9 +409,11 @@ void sendCmdsAndWait(){
             // Leer respuesta de la tarjeta maestra
             if(Serial2.available() > 0){
               input = Serial2.readStringUntil('\r');
-              Serial.print("resp: ");
+              Serial.print("resp:");
               Serial.println(input);
-              respFrom485[i] = input;
+              if(isStringNum(input) == true){
+                respFrom485[i] = input;
+              }
             }
           }
        }
@@ -487,7 +489,7 @@ void makeCommands(String cmd){
       cmdsTo485[index] = output;
       index++;
 
-      output = "@B" + sTemp + endChar;
+      output = "@B" + sTemp2 + endChar;
       cmdsTo485[index] = output;
       index++;
     }
@@ -622,6 +624,24 @@ void makeCommands(String cmd){
       index++;
     }
   } 
+}
+
+
+/**
+ * Prueba la cadena y retorna true si sólo se trata de dígitos,
+ * false de cualquier otra forma.
+ * 
+ * String s. String a analizar.
+ **/
+boolean isStringNum(String s){
+  char* cCmd = s.c_str();
+  MatchState ms (cCmd);
+  count = ms.GlobalMatch("[0-9]+", match_callback); 
+  if(count == 1){      
+    return true;
+  }
+  else
+    return false;
 }
 
 

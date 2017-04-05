@@ -404,7 +404,7 @@ void makeCommands(String cmd){
       setSourceCmd(index);
       index++;
 
-      output = "@B" + sTemp + endChar;
+      output = "@B" + sTemp2 + endChar;
       cmdsTo485[index] = output;
       setSourceCmd(index);
       index++;
