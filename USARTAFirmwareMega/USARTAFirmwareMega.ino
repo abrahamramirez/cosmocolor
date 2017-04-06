@@ -278,8 +278,8 @@ void loop() {
 
 
 /**
- * Analiza el método de alto nivel y construye la respuesta indicada por 
- * el medio por donde arrivó el método.
+ * Analiza el método de alto nivel y construye la respuesta indicada 
+ * por el medio por donde arrivó el método.
  * 
  * String uartMethod. Método de alto nivel a analizar.
  * 
@@ -305,6 +305,18 @@ void sendResponse(String uartMethod){
       sendSms(response.c_str(), phone.c_str());
     }
   }
+  count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
+  if(count == 1){  
+    if(isWifi){
+      sendWifiData(ip, port, response);
+    }
+    else if(isBt){
+      Serial3.println(response);
+    }
+    else if(isGsm){
+      sendSms(response.c_str(), phone.c_str());
+    }
+  }
   count = ms.GlobalMatch("getAllOut%(%)", match_callback);   
   if(count == 1){
     // Componer número binario de N bits
@@ -312,6 +324,22 @@ void sendResponse(String uartMethod){
     int bd = respFrom485[1].toInt();
     bin = getBinary(ad, 8);
     bin.concat(getBinary(bd, 8));
+    Serial.print("BIN: ");
+    Serial.println(bin);
+    
+    if(isWifi){
+      sendWifiData(ip, port, bin);
+    }
+    else if(isBt){
+      Serial3.println(bin);
+    }
+    else if(isGsm){
+      sendSms(bin.c_str(), phone.c_str());
+    }
+  }
+  count = ms.GlobalMatch("getOut%([0-9]+%)", match_callback); 
+  if(count == 1){   
+    bin = respFrom485[0];
     Serial.print("BIN: ");
     Serial.println(bin);
     
@@ -369,10 +397,8 @@ void makeCommands(String cmd){
     // Validar función: setAllOut(16 bits)
     // -----------------------------------------
     count = ms.GlobalMatch("setAllOut%([0-1]+%)", match_callback); 
-    // Traducir método a comandos de bajo nivel
     if(count == 1){    
-      Serial.println("*********** setAllOut(16 bits)");
-      // Extraer argumentos del método <<< caso inicial 16 bits >>>
+      // Extraer argumentos del método
       method = String(cCmd);
       method.trim();                    
       method.replace("\r", "");
@@ -408,8 +434,7 @@ void makeCommands(String cmd){
     // -----------------------------------------
     // Validar función: getOut(int bit)
     // -----------------------------------------
-    count = ms.GlobalMatch("getOut%([0-9]+%)", match_callback); 
-    // Traducir método a comandos de bajo nivel
+    count = ms.GlobalMatch("getOut%([0-9]+%)", match_callback);
     if(count == 1){    
       // Extraer argumentos del método 
       method = String(cCmd);
@@ -420,7 +445,7 @@ void makeCommands(String cmd){
       method.replace(")", "");
 
       // Extraer argumentos del método y completar a 2 cifras
-      sTemp = completeZeros(method, 2);
+      sTemp = completeZeros(String(getSwapBit(method.toInt())), 2);
            
       // Añadir comandos de bajo nivel a array
       cmdsTo485[index] = "@G" + sTemp + "#";
@@ -432,9 +457,7 @@ void makeCommands(String cmd){
     // Validar función: setOut(int salida, int valor)
     // ------------------------------------------------
     count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
-    // Traducir método a comandos de bajo nivel
     if(count == 1){    
-      Serial.println("*********** setOut(int salida, int valor)");
       // Extraer argumentos del método 
       method = String(cCmd);
       method.trim();                    
@@ -457,7 +480,7 @@ void makeCommands(String cmd){
       int bit1 = sBit.toInt();
       int val = sVal.toInt();
 
-      sTemp = completeZeros(sBit, 2);
+      sTemp = completeZeros(String(getSwapBit(bit1)), 2);
 
       str = "@S" + sTemp + val + endChar;
       cmdsTo485[index] = str;
@@ -468,7 +491,6 @@ void makeCommands(String cmd){
     // ----------------------------------------
     count = ms.GlobalMatch("getAllOut%(%)", match_callback);   
     if(count == 1){
-      Serial.println("********* getAllOut()");
       index = 0;
       cmdsTo485[index] = inputA;
       setSourceCmd(index);
@@ -484,7 +506,6 @@ void makeCommands(String cmd){
     // ----------------------------------------
     count = ms.GlobalMatch("getAllIn%(%)", match_callback);   
     if(count == 1){
-      Serial.println("********* getAllIn()");
       index = 0;
       cmdsTo485[index] = "@VPCD#";
       setSourceCmd(index);
@@ -496,7 +517,6 @@ void makeCommands(String cmd){
     // --------------------------------------------------
     count = ms.GlobalMatch("sendMsg%(%\"[%a%d%p%s]+%\",\"[0-9]+\"%)", match_callback); 
     if(count == 1){
-      Serial.println("******** sendMsg()");
       // Extraer argumentos del método 
       method = String(cCmd);
       method.trim();                    
@@ -539,6 +559,37 @@ void makeCommands(String cmd){
       index++;
     }
   } 
+}
+
+
+/**
+ * Retorna el bit equivalente para ajustar las salidas, p.e.
+ * el bit 7 es la salida 0.
+ * 
+ * int digits. Número de dígitos de la cifra final.
+ **/
+int getSwapBit(int bit1){
+  int res = 0;
+  switch(bit1){
+    case 0:  res = 7; break;
+    case 1:  res = 6; break;
+    case 2:  res = 5; break;
+    case 3:  res = 4; break;
+    case 4:  res = 3; break;
+    case 5:  res = 2; break;
+    case 6:  res = 1; break;
+    case 7:  res = 0; break;
+    
+    case 8:  res = 15; break;
+    case 9:  res = 14; break;
+    case 10: res = 13; break;
+    case 11: res = 12; break;
+    case 12: res = 11; break;
+    case 13: res = 10; break;
+    case 14: res = 9; break;
+    case 15: res = 8;  break;
+  }
+  return res;
 }
 
 
