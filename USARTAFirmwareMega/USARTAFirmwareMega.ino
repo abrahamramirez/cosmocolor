@@ -477,7 +477,7 @@ void makeCommands(String cmd){
 
       // Extraer argumentos del método y completar a 2 cifras
       sTemp = completeZeros(String(getSwapBit(method.toInt())), 2);
-           
+        
       // Añadir comandos de bajo nivel a array
       cmdsTo485[index] = "@G" + sTemp + "#";
       setSourceCmd(index);

@@ -1,4 +1,5 @@
 #include <SoftwareSerial.h>
+#include <StringTokenizer.h>
 #include <Wire.h>
 const int ledPin =  13;      // Numero del pin para el Led
 
@@ -27,7 +28,16 @@ const int in5V3 =  38;
 const int in5V4 =  39;      
 const int in5V5 =  40;    
 const int in5V6 =  41;      
-const int in5V7 =  42;      
+const int in5V7 =  42;     
+
+// Entradas ADC nativas
+const int inAD1 =  A0;
+const int inAD2 =  A1; 
+const int inAD3 =  A2; 
+const int inAD4 =  A3; 
+const int inAD5 =  A4; 
+const int inAD6 =  A5; 
+const int inAD7 =  A6;   
 
 byte BITS0 = 0;
 byte BITS1 = 0;
@@ -88,9 +98,17 @@ void setup() {
   pinMode(in5V5, INPUT);
   pinMode(in5V6, INPUT);
   pinMode(in5V7, INPUT);
+  pinMode(inAD1, INPUT);
+  pinMode(inAD2, INPUT);
+  pinMode(inAD3, INPUT);
+  pinMode(inAD4, INPUT);
+  pinMode(inAD5, INPUT);
+  pinMode(inAD6, INPUT);
+  pinMode(inAD7, INPUT);
   // Inicializar salidas inicialmente apagadas
   writeI2C(0XA0, 0);
   writeI2C(0XB0, 0);
+
 }
 
 String commands = "";
@@ -100,7 +118,6 @@ int bit1 = 0;
 int val = 0;
 boolean isUsartA = false;
 boolean isUsartB = false;
-
 
 // ---------------------------------------
 // Interrupción cuando arriva dato USARTA
@@ -113,7 +130,6 @@ void serialEvent1() {
   isUsartA = true;
   isUsartB = false;
 }
-
 
 // ---------------------------------------
 // Interrupción cuando arriva dato USARTB
@@ -211,6 +227,8 @@ void loop() {
   }
  
   commands = "";
+//  Serial.print("A0: ");
+//  Serial.println(analogRead(A0));
   delay(300);
 }
 
@@ -277,8 +295,25 @@ boolean getBit(int bit1){
     resp = digitalRead(bit1);
     delay(100);
   }
-  
   return resp;
+}
+
+
+/**
+ * Habilita las entradas indicadas
+ * 
+ * char* inputs. String separado por comas indicando las
+ *               entradas p.e. "1,3,10,A0"
+ **/
+void enableInputs(char* inputs){
+  StringTokenizer tokens(inputs, ",");
+  while(tokens.hasNext()){
+    int input = tokens.nextToken().toInt();
+    pinMode(input, INPUT);
+    Serial.println("Habilitadas");
+    Serial.print(input); 
+    Serial.print(", ");
+  }
 }
 
 
