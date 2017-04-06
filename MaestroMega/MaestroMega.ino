@@ -137,12 +137,14 @@ void loop() {
     dato = temp.toInt();
     direccion = 0XA0;
     writeI2C(direccion, dato);
+    delay(100);
   }
   else if(commands.startsWith("@B")){
     temp = commands.substring(2);
     dato = temp.toInt();
     direccion = 0XB0;
     writeI2C(direccion, dato);
+    delay(100);
   }
   // --------------------------------
   // Comandos para leer salidas
@@ -170,6 +172,7 @@ void loop() {
     temp1 = commands.substring(4);
     val = temp1.toInt();
     setI2CBit(bit1,  val);
+    delay(100);
   }
   // ------------------------------------------
   // Comandos para obtener el valor de un bit
@@ -180,6 +183,7 @@ void loop() {
     Serial1.print(getBit(bit1));
     Serial2.println(getBit(bit1));
     Serial.println(getBit(bit1));
+    delay(100);
     
   }
  
