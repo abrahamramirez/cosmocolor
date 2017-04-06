@@ -3,6 +3,8 @@
 #include <Wire.h>
 const int ledPin =  13;      // Numero del pin para el Led
 
+const int alertA0 = 650;
+
 // Entradas a +12V nativas
 const int in12V1 =  22;      
 const int in12V2 =  23;      
@@ -108,7 +110,8 @@ void setup() {
   // Inicializar salidas inicialmente apagadas
   writeI2C(0XA0, 0);
   writeI2C(0XB0, 0);
-
+  delay(500);
+//  Serial1.println("@Wifi: Alerta!!!!");
 }
 
 String commands = "";
@@ -227,12 +230,45 @@ void loop() {
   }
  
   commands = "";
-//  Serial.print("A0: ");
-//  Serial.println(analogRead(A0));
+  readSensors("Wifi");
   delay(300);
 }
 
 
+void readSensors(char* alertBy){
+
+  if(readSensor(A0, 10) >= alertA0){
+    
+  }
+  
+}
+
+
+void sendMsgUsartA(String protocol, String msg){
+  Serial.print(protocol);
+  Serial.println(msg);
+  Serial1.print(protocol);
+  Serial1.print(":");
+  Serial1.println(msg);
+  delay(500);
+}
+
+
+/**
+ * Realiza un ciclo de lectura de una entrada analógica tantas
+ * veces como se indique
+ * 
+ * int input. Entrada analógica
+ * int iterations. Número de iteraciones en el ciclo.
+ **/
+int readSensor(int input, int iterations){
+  int val = 0;
+  for(int i = 0; i <= iterations; i++){
+    val += analogRead(input);
+    delay(10);
+  }
+  return (val / iterations);
+}
 
 /**
  * Establece un valor 0 o 1 en un bit de salida específico.

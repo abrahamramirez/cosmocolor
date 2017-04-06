@@ -228,10 +228,12 @@ void serialEvent3() {
 //                Método principal
 // *********************************************
 void loop() {
-//   if(port485.available() > 0){
-//     Serial.print("Incoming: ");
-//     Serial.println(port485.read());
-//   }
+   if(port485.available() > 0){
+     String input485 = port485.readStringUntil('\r');
+     if(input485.startsWith("@")){
+       Serial.println(input485);  
+     }
+   }
   /**
    * Funcionamiento. Los datos de Wifi, GSM y Bt llegan mediante interrupciones
    * manejadas por hardware. Una vez que llegan métodos de alto nivel p.e.
