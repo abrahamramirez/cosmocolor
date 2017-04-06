@@ -353,6 +353,22 @@ void sendResponse(String uartMethod){
       sendSms(bin.c_str(), phone.c_str());
     }
   }
+  count = ms.GlobalMatch("getIn%([0-9]+%)", match_callback);
+  if(count == 1){ 
+    bin = respFrom485[0];
+    Serial.print("BIN: ");
+    Serial.println(bin);
+    
+    if(isWifi){
+      sendWifiData(ip, port, bin);
+    }
+    else if(isBt){
+      Serial3.println(bin);
+    }
+    else if(isGsm){
+      sendSms(bin.c_str(), phone.c_str());
+    }
+  }
 }
 
 
@@ -451,6 +467,28 @@ void makeCommands(String cmd){
       cmdsTo485[index] = "@G" + sTemp + "#";
       setSourceCmd(index);
     }
+
+
+    // -----------------------------------------
+    // Validar función: getIn(int bit)
+    // -----------------------------------------
+    count = ms.GlobalMatch("getIn%([0-9]+%)", match_callback);
+    if(count == 1){    
+      // Extraer argumentos del método 
+      method = String(cCmd);
+      method.trim();                    
+      method.replace("\r", "");
+      method.replace("\n", "");
+      method.replace("getIn(", "");
+      method.replace(")", "");
+
+      // Extraer argumentos del método y completar a 2 cifras
+      sTemp = completeZeros(method, 2);
+           
+      // Añadir comandos de bajo nivel a array
+      cmdsTo485[index] = "@G" + sTemp + "#";
+      setSourceCmd(index);
+    }
     
 
     // ------------------------------------------------
@@ -475,13 +513,11 @@ void makeCommands(String cmd){
             break;
       }
       sVal = method.substring(method.length() - 1, method.length());
-      
+   
       // Añadir comandos de bajo nivel a array
       int bit1 = sBit.toInt();
       int val = sVal.toInt();
-
       sTemp = completeZeros(String(getSwapBit(bit1)), 2);
-
       str = "@S" + sTemp + val + endChar;
       cmdsTo485[index] = str;
     }
