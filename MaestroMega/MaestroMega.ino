@@ -152,14 +152,14 @@ void loop() {
   else if(commands.equals("@VA")){
     readI2C(0xA0);
     delay(100);
-    Serial1.print(resultado);
+    Serial1.println(resultado);
     Serial2.println(resultado);
     Serial.println(resultado);
   }
   else if(commands.equals("@VB")){
     readI2C(0xB0);
     delay(100);
-    Serial1.print(resultado);
+    Serial1.println(resultado);
     Serial2.println(resultado);
     Serial.println(resultado);
   }
@@ -180,7 +180,7 @@ void loop() {
   else if(commands.startsWith("@G")){
     temp = commands.substring(2, 4);
     bit1 = temp.toInt();
-    Serial1.print(getBit(bit1));
+    Serial1.println(getBit(bit1));
     Serial2.println(getBit(bit1));
     Serial.println(getBit(bit1));
     delay(100);
@@ -204,7 +204,7 @@ void loop() {
             outputs[16],outputs[17],outputs[18],outputs[19],
             outputs[20]
             );
-    Serial1.print(buffer);
+    Serial1.println(buffer);
     Serial2.println(buffer);
     Serial.println(buffer);
     delay(100);
