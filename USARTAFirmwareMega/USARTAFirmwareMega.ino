@@ -368,6 +368,22 @@ void sendResponse(String uartMethod){
       sendSms(bin.c_str(), phone.c_str());
     }
   }
+  count = ms.GlobalMatch("getAllIn%([0-9]+%)", match_callback);
+  if(count == 1){ 
+    bin = respFrom485[0];
+    Serial.print("BIN: ");
+    Serial.println(bin);
+    
+    if(isWifi){
+      sendWifiData(ip, port, bin);
+    }
+    else if(isBt){
+      Serial3.println(bin);
+    }
+    else if(isGsm){
+      sendSms(bin.c_str(), phone.c_str());
+    }
+  }
 }
 
 
@@ -467,7 +483,6 @@ void makeCommands(String cmd){
       setSourceCmd(index);
     }
 
-
     // -----------------------------------------
     // Validar función: getIn(int bit)
     // -----------------------------------------
@@ -489,7 +504,6 @@ void makeCommands(String cmd){
       setSourceCmd(index);
     }
     
-
     // ------------------------------------------------
     // Validar función: setOut(int salida, int valor)
     // ------------------------------------------------
@@ -542,7 +556,7 @@ void makeCommands(String cmd){
     count = ms.GlobalMatch("getAllIn%(%)", match_callback);   
     if(count == 1){
       index = 0;
-      cmdsTo485[index] = "@VPCD#";
+      cmdsTo485[index] = "@I#";
       setSourceCmd(index);
       index++;
     }

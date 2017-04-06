@@ -204,9 +204,9 @@ void loop() {
             outputs[16],outputs[17],outputs[18],outputs[19],
             outputs[20]
             );
-    Serial1.print(String(buffer));
-    Serial2.println(String(buffer));
-    Serial.println(String(buffer));
+    Serial1.print(buffer);
+    Serial2.println(buffer);
+    Serial.println(buffer);
     delay(100);
   }
  

@@ -136,7 +136,7 @@ void setup(){
   Serial1.begin(9600);
   Serial2.begin(9600);
   Serial.println("--------------------- ");
-  Serial.println("     Iniciando        ");
+  Serial.println("   Iniciando USATTB   ");
   Serial.println("--------------------- ");
   initLcd();
   
