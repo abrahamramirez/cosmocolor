@@ -184,93 +184,34 @@ void loop() {
     Serial2.println(getBit(bit1));
     Serial.println(getBit(bit1));
     delay(100);
-    
+  }
+  // -------------------------------------------------
+  // Comandos para obtener todas las entradas nativas
+  // 22 hasta 42
+  // ------------------------------------------------
+  else if(commands.startsWith("@I")){
+    int outputs[22];
+    char buffer[22];
+    for(int i = 22; i <= 42; i++){
+      int j = i - 22;
+      outputs[j] = getBit(i);
+    }
+    sprintf(buffer, "%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d", 
+            outputs[0],outputs[1],outputs[2],outputs[3],
+            outputs[4],outputs[5],outputs[6],outputs[7],
+            outputs[8],outputs[9],outputs[10],outputs[11],
+            outputs[12],outputs[13],outputs[14],outputs[15],
+            outputs[16],outputs[17],outputs[18],outputs[19],
+            outputs[20]
+            );
+    Serial1.print(String(buffer));
+    Serial2.println(String(buffer));
+    Serial.println(String(buffer));
+    delay(100);
   }
  
   commands = "";
-
   delay(300);
-  
-//  while(Serial1.available() > 0) {
-//    if(Serial1.read() == '@'){       // Si recibimos el inicio de trama
-//      char micro = Serial1.read();    // leemos el siguiente caracter
-//      Serial.print(micro);
-//      switch (micro){
-//        case 'A':
-//          direccion = 0XA0;
-//          dato = Serial1.parseInt(); //recibimos valor numérico
-//          Serial.println(dato);
-//          break;
-//        case 'B':
-//          direccion = 0xB0;
-//          dato = Serial1.parseInt();  //recibimos valor numérico
-//          Serial.println(dato);
-//          break;
-//        case 'V':
-//          char i = Serial1.read();    //leemos el siguiente caracter
-//          if (i == 'A') {
-//            readI2C(0xA0);
-//            Serial1.println(resultado);
-//          }
-//          if (i == 'B') {
-//            readI2C(0xB0);
-//            Serial1.println(resultado);
-//          }
-//          break;
-//      }
-//      if (Serial1.read() == '#'){     //Si el fin de trama es el correcto
-//        writeI2C(direccion, dato);
-//      }
-//    }
-//  }
-//
-//  while(Serial2.available() > 0) {
-//    if(Serial2.read() == '@'){ //Si recibimos el inicio de trama
-//      char micro = Serial2.read(); //leemos el siguiente caracter
-//      Serial.print(micro);
-//      switch (micro){
-//        case 'A':
-//          direccion = 0XA0;
-//          dato = Serial2.parseInt(); //recibimos valor numérico
-//          Serial.println(dato);
-//          break;
-//        case 'B':
-//          direccion = 0xB0;
-//          dato = Serial2.parseInt(); //recibimos valor numérico
-//          Serial.println(dato);
-//          break;
-//        case 'V':
-//          char I = Serial2.read(); //leemos el siguiente caracter
-//          if (I == 'A') {
-//            readI2C (0xA0); 
-//            
-//            Serial2.println(resultado);
-//            delay(100);
-//          }
-//          if (I == 'B') {
-//            readI2C (0xB0);
-//            
-//            Serial2.println(resultado);
-//            delay(100);
-//          }
-//          break;
-//      }
-//      if (Serial2.read() == '#'){ //Si el fin de trama es el correcto
-//        writeI2C(direccion, dato);
-//      }
-//    }
-//  }//SERIAL 2
-//  ENTRADAS12();
-//  //ENTRADAS24();
-//  // ENTRADASTTL();
-//  // ENTRADASANALOGICAS();
-//  // SENSOR24VON();
-//  SENSOR12VON();
-//  //  SENSORTTLON();
-//  //  SENSORADCON();
-//
-//  delay(10);
-
 }
 
 

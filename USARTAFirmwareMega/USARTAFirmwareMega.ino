@@ -273,7 +273,6 @@ void loop() {
   printAllArrays();
   sendResponse(lastUartMethod);
   clearAllArrays();
-  
 }
 
 
