@@ -2,10 +2,10 @@
 #include <WiFiUdp.h>
 
 WiFiUDP Udp;
-//const char* ssid = "INFINITUME7EC5E";
-//const char* password = "E3F7CFC6AA";
-const char* ssid = "INFINITUM4725";           // Nombre de la red a conectar
-const char* password = "U89fotYc2N";          // Contraseña de la red a conectar
+const char* ssid = "INFINITUME7EC5E";
+const char* password = "E3F7CFC6AA";
+//const char* ssid = "INFINITUM4725";           // Nombre de la red a conectar
+//const char* password = "U89fotYc2N";          // Contraseña de la red a conectar
 unsigned int localUdpPort = 4210;             // Puerto UDP para recepción de paquetes
 char incomingPacket[255];                     // Buffer para paquetes entrantes
 String cmd;                                   // Comando AT personalizado

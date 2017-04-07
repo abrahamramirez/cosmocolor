@@ -257,7 +257,7 @@ void loop() {
       Serial.print(cmdsTo485[i]);
       Serial.println();
       delay(500);
-      for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg
+      for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 2 seg
         // Leer respuesta de la tarjeta maestra
         if(port485.available() > 0){
           input = port485.readStringUntil('\r');

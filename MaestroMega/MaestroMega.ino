@@ -1,9 +1,18 @@
 #include <SoftwareSerial.h>
 #include <StringTokenizer.h>
 #include <Wire.h>
+#include "max6675.h"
 const int ledPin =  13;      // Numero del pin para el Led
 
-const int alertA0 = 650;
+int thermoDO = 4;
+int thermoCS = 5;
+int thermoCLK = 6;
+
+MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+
+const String phone = "+527711819555";
+
+const int alertA0 = 600;    
 
 // Entradas a +12V nativas
 const int in12V1 =  22;      
@@ -110,8 +119,7 @@ void setup() {
   // Inicializar salidas inicialmente apagadas
   writeI2C(0XA0, 0);
   writeI2C(0XB0, 0);
-  delay(500);
-//  Serial1.println("@Wifi: Alerta!!!!");
+  
 }
 
 String commands = "";
@@ -228,9 +236,21 @@ void loop() {
     Serial.println(buffer);
     delay(100);
   }
- 
   commands = "";
-  readSensors("Wifi");
+
+  // -------------------------------------------------
+  // Enviar alertas cuando los sensores lo indiquen
+  // ------------------------------------------------
+//  Serial.println(readSensor(A0, 50));
+  
+  double temp = thermocouple.readCelsius();
+  Serial.print("C = "); 
+  Serial.println(temp);
+  if(temp >= 110){
+    sendAlert("Wifi", "¡Temperatura muy alta!");
+  }
+  
+  
   delay(300);
 }
 
@@ -238,19 +258,20 @@ void loop() {
 void readSensors(char* alertBy){
 
   if(readSensor(A0, 10) >= alertA0){
-    
   }
   
 }
 
 
-void sendMsgUsartA(String protocol, String msg){
+void sendAlert(String protocol, String msg){
   Serial.print(protocol);
+  Serial.print(":");
   Serial.println(msg);
+  Serial1.print("@");
   Serial1.print(protocol);
-  Serial1.print(":");
+  Serial1.print("@");
   Serial1.println(msg);
-  delay(500);
+  delay(2000);
 }
 
 
