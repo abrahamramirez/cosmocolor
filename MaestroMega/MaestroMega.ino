@@ -243,12 +243,12 @@ void loop() {
   // ------------------------------------------------
 //  Serial.println(readSensor(A0, 50));
   
-  double temp = thermocouple.readCelsius();
-  Serial.print("C = "); 
-  Serial.println(temp);
-  if(temp >= 110){
-    sendAlert("Wifi", "¡Temperatura muy alta!");
-  }
+//  double temp = thermocouple.readCelsius();
+//  Serial.print("C = "); 
+//  Serial.println(temp);
+//  if(temp >= 110){
+//    sendAlert("Wifi", "¡Temperatura muy alta!");
+//  }
   
   
   delay(300);
