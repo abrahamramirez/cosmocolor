@@ -2,6 +2,7 @@
 #include <AltSoftSerial.h>
 #include <TinyGPS.h>
 #include <Regexp.h>
+#include <nmea.h>
 
 //
 // Para crear validaciones de expresiones regulares
@@ -67,9 +68,12 @@ void match_callback  (const char * match,          // matching string (not null-
 
 SoftwareSerial port485(10, 11);     // RX = 10 and TX = 11
 AltSoftSerial  gpsPort;             // RX = 48 and TX = 46
-TinyGPS gps;                        // Instancia de la librería del GPS
+
+NMEA gps(GPRMC);                    // create a GPS data connection to GPRMC sentence type
 #define RS485_PIN 13                // Pin de control de red 485 
 #define CMD_LEN 20                  // Número de comandos de bajo nivel en el array 
+String responseIp = "192.168.1.82";
+String responsePort = "55056";
 String methodFromUart = "";         // Funcion de alto nivel recibido desde cualquier UART
 int total = 0;                      // Total de comandos de bajo nivel generados a partir de funció de alto nivel
 unsigned long count;                // Contador coincidencias al validar reg exp
@@ -83,8 +87,7 @@ int i = 0;
 String gpsPos = "";                 
 String str = "";
 String phone = "";
-String responseIp = "192.168.1.71";
-String responsePort = "55056";
+
 String input = "";
 boolean isWifi = false;
 boolean isGsm = false;
@@ -112,7 +115,7 @@ void setup() {
   Serial3.println(" ");
   Serial3.println(" ");
 
-  configGsm();
+//  configGsm();
   
   delay(3000);
   Serial.println("");
@@ -272,7 +275,161 @@ void loop() {
   printAllArrays();
   sendResponse(lastUartMethod);
   clearAllArrays();
+
+  getGps();
+  
+  
 }
+
+
+
+#define BUFFSIZ 90
+char buffer[BUFFSIZ];
+char *parseptr;
+char buffidx;
+uint8_t hour, minute, second, year, month, date;
+uint32_t latitude, longitude;
+uint8_t groundspeed, trackangle;
+char latdir, longdir;
+char status;
+
+
+void getGps(){
+  uint32_t tmp;
+ 
+  readline();
+
+  if (strncmp(buffer, "$GPRMC",6) == 0) { 
+    // hhmmss time data
+    parseptr = buffer + 7;
+//    tmp = parsedecimal(parseptr);
+//    hour = tmp / 10000;
+//    minute = (tmp / 100) % 100;
+//    second = tmp % 100;
+   
+    parseptr = strchr(parseptr, ',') + 1;
+    status = parseptr[0];
+    parseptr += 2;
+    
+    // Obtener latitud
+//    latitude = parsedecimal(parseptr);
+    String str = String(parsedecimal(parseptr));
+    String d = str.substring(0,2);
+    String m = str.substring(2,4);
+    Serial.print("d: "); Serial.println(d.toFloat());
+    Serial.print("m: "); Serial.println(m.toFloat());
+    parseptr = strchr(parseptr, '.') + 1;
+    str = String(parsedecimal(parseptr));
+    String s = str.substring(0,2) + "." + str.substring(2,4);
+    Serial.print("s: "); Serial.println(s.toFloat());
+
+    float gpsLat = d.toFloat() + (m.toFloat() / 60.0) + (m.toFloat() / 3600.0);
+    Serial.print("gpsLat: "); Serial.println(gpsLat, 4);
+    
+//    if (latitude != 0) {
+//      latitude *= 10000;
+//      parseptr = strchr(parseptr, '.')+1;
+//      Serial.println("parsept: "); Serial.println(parsedecimal(parseptr));
+//      latitude += parsedecimal(parseptr);
+//    }
+//   parseptr = strchr(parseptr, ',') + 1;
+   // read latitude N/S data
+   if (parseptr[0] != ',') {
+     latdir = parseptr[0];
+   }
+   
+   //Serial.println(latdir);
+   
+   // longitude
+   parseptr = strchr(parseptr, ',')+1;
+   longitude = parsedecimal(parseptr);
+   if (longitude != 0) {
+     longitude *= 10000;
+     parseptr = strchr(parseptr, '.')+1;
+     longitude += parsedecimal(parseptr);
+   }
+   parseptr = strchr(parseptr, ',')+1;
+   // read longitude E/W data
+   if (parseptr[0] != ',') {
+     longdir = parseptr[0];
+   }
+   
+
+   // groundspeed
+   parseptr = strchr(parseptr, ',') + 1;
+   groundspeed = parsedecimal(parseptr);
+
+   // track angle
+   parseptr = strchr(parseptr, ',')+1;
+   trackangle = parsedecimal(parseptr);
+
+
+   // date
+   parseptr = strchr(parseptr, ',')+1;
+   tmp = parsedecimal(parseptr);
+   date = tmp / 10000;
+   month = (tmp / 100) % 100;
+   year = tmp % 100;
+   
+   Serial.print("\nZeit: ");
+   Serial.print(hour, DEC); Serial.print(':');
+   Serial.print(minute, DEC); Serial.print(':');
+   Serial.println(second, DEC);
+   Serial.print("Datum: ");
+   Serial.print(date, DEC); Serial.print('-');
+   Serial.print(month, DEC); Serial.print('-');
+   Serial.print("0");
+   Serial.println(year, DEC);
+   Serial.print("Speed: ");
+   Serial.println(groundspeed, DEC);
+   
+   
+  Serial.print("Lat: ");
+   if (latdir == 'N')
+      Serial.print('+');
+   else if (latdir == 'S')
+      Serial.print('-');
+   Serial.print(latitude/1000000, DEC); Serial.print('°'); Serial.print(' ');
+   Serial.print((latitude/10000)%100, DEC); Serial.print('\''); Serial.print(' ');
+   Serial.print((latitude%10000)*6/1000, DEC); Serial.print('.');
+   Serial.print(((latitude%10000)*6/10)%100, DEC); Serial.println('\"');
+   
+ }
+}
+
+uint32_t parsedecimal(char *str) {
+ uint32_t d = 0;
+ 
+ while (str[0] != 0) {
+  if ((str[0] > '9') || (str[0] < '0'))
+    return d;
+  d *= 10;
+  d += str[0] - '0';
+  str++;
+ }
+ return d;
+}
+
+void readline(void) {
+ char c;
+ 
+ buffidx = 0;
+ while (1) {
+     c=gpsPort.read();
+     if (c == -1)
+       continue;
+//     Serial.print(c);
+     if (c == '\n')
+       continue;
+     if ((buffidx == BUFFSIZ-1) || (c == '\r')) {
+       buffer[buffidx] = 0;
+       return;
+     }
+     buffer[buffidx++]= c;
+ }
+}
+
+
 
 
 /**
@@ -365,7 +522,7 @@ void sendResponse(String uartMethod){
       sendSms(bin.c_str(), phone.c_str());
     }
   }
-  count = ms.GlobalMatch("getAllIn%([0-9]+%)", match_callback);
+  count = ms.GlobalMatch("getAllIn%(%)", match_callback);
   if(count == 1){ 
     bin = respFrom485[0];
     Serial.print("BIN: ");
@@ -592,11 +749,8 @@ void makeCommands(String cmd){
     // ----------------------------------------
     count = ms.GlobalMatch("getGpsPos%(%)", match_callback);   
     if(count == 1){
-      Serial.println("********* getGpsPos()");
-//      getGpsInfo();
-      index = 0;
-      cmdsTo485[index] = "@ADC00#";
-      index++;
+      delay(1000);
+      getGpsInfo();
     }
   } 
 }
@@ -644,21 +798,17 @@ String completeZeros(String sNum, int digits){
   int num = sNum.toInt();
   String s = "";
   String t = "";
-
   if(digits == 2){
-    if(num < 10){
+    if(num < 10)  
       t = "0" + sNum;
-    }
     else 
       t = sNum;
   }
   else if(digits == 3){
-    if(num < 10){
+    if(num < 10)
       t = "00" + sNum;
-    }
-    else if(num < 100){
+    else if(num < 100)
       t = "0" + sNum;
-    }
     else 
       t = sNum;
   }
@@ -675,34 +825,37 @@ String completeZeros(String sNum, int digits){
  * Retorna. 19.415798@-99.2389486
  **/
 void getGpsInfo(){
-  bool newData = false;
-  unsigned long chars;
-  unsigned short sentences, failed;
-
-  // For one second we parse GPS data and report some key values
-  for (unsigned long start = millis(); millis() - start < 1000;){
-    while (gpsPort.available()){
-      char c = gpsPort.read();
-      if (gps.encode(c)) // Did a new valid sentence come in?
-        newData = true;
-    }
-  }
-  if (newData){
-    float flat, flon;
-    unsigned long age;
-    gps.f_get_position(&flat, &flon, &age);
-    flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6;
-    flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6;
-    
-    // Componer string para devolver
-    gpsPos = "";
-    str = String(flat, 6);
-    gpsPos.concat(str);
-    str = String(flon, 6);
-    gpsPos.concat("@");
-    gpsPos.concat(str);
-    Serial.print(gpsPos);
-  }
+//  bool newData = false;
+//  unsigned long chars;
+//  unsigned short sentences, failed;
+//  Serial.println("gps: ");
+//  delay(1000);
+//  // For one second we parse GPS data and report some key values
+//  for (unsigned long start = millis(); millis() - start < 1000;){
+//    while (gpsPort.available()){
+//      char c = gpsPort.read();
+//      Serial.print(c);
+//      if (gps.encode(c)) // Did a new valid sentence come in?
+//        newData = true;
+//    }
+//  }
+//  if (newData){
+//    float flat, flon;
+//    unsigned long age;
+//    gps.f_get_position(&flat, &flon, &age);
+//    flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6;
+//    flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6;
+//    
+//    // Componer string para devolver
+//    gpsPos = "";
+//    str = String(flat, 6);
+//    gpsPos.concat(str);
+//    str = String(flon, 6);
+//    gpsPos.concat("@");
+//    gpsPos.concat(str);
+//    Serial.print("*****************");
+//    Serial.print(gpsPos);
+//  }
 }
 
 
