@@ -312,16 +312,15 @@ void getGps(){
     parseptr += 2;
     
     // Obtener latitud
-//    latitude = parsedecimal(parseptr);
     String str = String(parsedecimal(parseptr));
     String d = str.substring(0,2);
     String m = str.substring(2,4);
-    Serial.print("d: "); Serial.println(d.toFloat());
-    Serial.print("m: "); Serial.println(m.toFloat());
+//    Serial.print("d: "); Serial.println(d.toFloat());
+//    Serial.print("m: "); Serial.println(m.toFloat());
     parseptr = strchr(parseptr, '.') + 1;
     str = String(parsedecimal(parseptr));
     String s = str.substring(0,2) + "." + str.substring(2,4);
-    Serial.print("s: "); Serial.println(s.toFloat());
+//    Serial.print("s: "); Serial.println(s.toFloat());
 
     float gpsLat = d.toFloat() + (m.toFloat() / 60.0) + (m.toFloat() / 3600.0);
     Serial.print("gpsLat: "); Serial.println(gpsLat, 4);
@@ -332,11 +331,12 @@ void getGps(){
 //      Serial.println("parsept: "); Serial.println(parsedecimal(parseptr));
 //      latitude += parsedecimal(parseptr);
 //    }
-//   parseptr = strchr(parseptr, ',') + 1;
-   // read latitude N/S data
+   parseptr = strchr(parseptr, ',') + 1;
+   // Read latitude N/S data
    if (parseptr[0] != ',') {
      latdir = parseptr[0];
    }
+   Serial.print("latdir: "); Serial.println(latdir);
    
    //Serial.println(latdir);
    
