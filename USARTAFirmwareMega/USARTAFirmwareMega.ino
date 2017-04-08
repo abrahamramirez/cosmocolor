@@ -310,8 +310,9 @@ void getGps(){
     parseptr = strchr(parseptr, ',') + 1;
     status = parseptr[0];
     parseptr += 2;
-    
+    // -----------------------
     // Obtener latitud
+    //
     String str = String(parsedecimal(parseptr));
     String d = str.substring(0,2);
     String m = str.substring(2,4);
@@ -325,75 +326,39 @@ void getGps(){
     float gpsLat = d.toFloat() + (m.toFloat() / 60.0) + (m.toFloat() / 3600.0);
     Serial.print("gpsLat: "); Serial.println(gpsLat, 4);
     
-//    if (latitude != 0) {
-//      latitude *= 10000;
-//      parseptr = strchr(parseptr, '.')+1;
-//      Serial.println("parsept: "); Serial.println(parsedecimal(parseptr));
-//      latitude += parsedecimal(parseptr);
-//    }
-   parseptr = strchr(parseptr, ',') + 1;
-   // Read latitude N/S data
-   if (parseptr[0] != ',') {
-     latdir = parseptr[0];
-   }
-   Serial.print("latdir: "); Serial.println(latdir);
+    parseptr = strchr(parseptr, ',') + 1;
+    if (parseptr[0] != ',') {       // Read latitude N/S data
+      latdir = parseptr[0];
+    }
+    Serial.print("latdir: "); Serial.println(latdir);
    
-   //Serial.println(latdir);
-   
-   // longitude
-   parseptr = strchr(parseptr, ',')+1;
-   longitude = parsedecimal(parseptr);
-   if (longitude != 0) {
-     longitude *= 10000;
-     parseptr = strchr(parseptr, '.')+1;
-     longitude += parsedecimal(parseptr);
-   }
-   parseptr = strchr(parseptr, ',')+1;
-   // read longitude E/W data
-   if (parseptr[0] != ',') {
-     longdir = parseptr[0];
-   }
-   
+    // -----------------------
+    // Obtener latitud
+    //
+    parseptr = strchr(parseptr, ',') + 1;
+    str = String(parsedecimal(parseptr));
+    if(str.length() == 4){
+      d = str.substring(0,2);
+      m = str.substring(2,4);
+    }
+    else if(str.length() == 5){
+      d = str.substring(0,3);
+      m = str.substring(3,5);
+    }
+    parseptr = strchr(parseptr, '.') + 1;
+    str = String(parsedecimal(parseptr));
+    s = str.substring(0,2) + "." + str.substring(2,4);
 
-   // groundspeed
-   parseptr = strchr(parseptr, ',') + 1;
-   groundspeed = parsedecimal(parseptr);
+    float gpsLon = d.toFloat() + (m.toFloat() / 60.0) + (m.toFloat() / 3600.0);
+    Serial.print("gpsLon: "); Serial.println(gpsLon, 4);
+    
+    parseptr = strchr(parseptr, ',')+1;
+    if (parseptr[0] != ',') {     // Read longitude E/W data
+      longdir = parseptr[0];
+    }
+    Serial.print("longdir: "); Serial.println(longdir);
 
-   // track angle
-   parseptr = strchr(parseptr, ',')+1;
-   trackangle = parsedecimal(parseptr);
-
-
-   // date
-   parseptr = strchr(parseptr, ',')+1;
-   tmp = parsedecimal(parseptr);
-   date = tmp / 10000;
-   month = (tmp / 100) % 100;
-   year = tmp % 100;
-   
-   Serial.print("\nZeit: ");
-   Serial.print(hour, DEC); Serial.print(':');
-   Serial.print(minute, DEC); Serial.print(':');
-   Serial.println(second, DEC);
-   Serial.print("Datum: ");
-   Serial.print(date, DEC); Serial.print('-');
-   Serial.print(month, DEC); Serial.print('-');
-   Serial.print("0");
-   Serial.println(year, DEC);
-   Serial.print("Speed: ");
-   Serial.println(groundspeed, DEC);
-   
-   
-  Serial.print("Lat: ");
-   if (latdir == 'N')
-      Serial.print('+');
-   else if (latdir == 'S')
-      Serial.print('-');
-   Serial.print(latitude/1000000, DEC); Serial.print('°'); Serial.print(' ');
-   Serial.print((latitude/10000)%100, DEC); Serial.print('\''); Serial.print(' ');
-   Serial.print((latitude%10000)*6/1000, DEC); Serial.print('.');
-   Serial.print(((latitude%10000)*6/10)%100, DEC); Serial.println('\"');
-   
+  
  }
 }
 
