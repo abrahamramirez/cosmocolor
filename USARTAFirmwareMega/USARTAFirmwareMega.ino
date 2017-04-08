@@ -70,8 +70,6 @@ AltSoftSerial  gpsPort;             // RX = 48 and TX = 46
 TinyGPS gps;                        // Instancia de la librería del GPS
 #define RS485_PIN 13                // Pin de control de red 485 
 #define CMD_LEN 20                  // Número de comandos de bajo nivel en el array 
-String cmd485ToSend = "@OK0";       // Comando enviado desde el maestro 485 para si existen, enviar comandos de bajo nivel
-String from485 = "";                // Comandos recibidos desde 485
 String methodFromUart = "";         // Funcion de alto nivel recibido desde cualquier UART
 int total = 0;                      // Total de comandos de bajo nivel generados a partir de funció de alto nivel
 unsigned long count;                // Contador coincidencias al validar reg exp
@@ -85,9 +83,8 @@ int i = 0;
 String gpsPos = "";                 
 String str = "";
 String phone = "";
-String ok = "OK";
-String ip = "192.168.1.71";
-String port = "55056";
+String responseIp = "192.168.1.71";
+String responsePort = "55056";
 String input = "";
 boolean isWifi = false;
 boolean isGsm = false;
@@ -228,12 +225,12 @@ void serialEvent3() {
 //                Método principal
 // *********************************************
 void loop() {
-   if(port485.available() > 0){
-     String input485 = port485.readStringUntil('\r');
-     if(input485.startsWith("@")){
-       Serial.println(input485);  
-     }
-   }
+//   if(port485.available() > 0){
+//     String input485 = port485.readStringUntil('\r');
+//     if(input485.startsWith("@")){
+//       Serial.println(input485);  
+//     }
+//   }
   /**
    * Funcionamiento. Los datos de Wifi, GSM y Bt llegan mediante interrupciones
    * manejadas por hardware. Una vez que llegan métodos de alto nivel p.e.
@@ -289,15 +286,13 @@ void sendResponse(String uartMethod){
   String response = "OK";
   String bin = "";
   String s = "";
-  String ip = "192.168.1.68";   // IP destino de respuesta de Wifi
-  String port = "55056";        // Puerto destino de respuesta de Wifi
   
   char* cCmd = uartMethod.c_str();
   MatchState ms (cCmd);
   count = ms.GlobalMatch("setAllOut%([0-1]+%)", match_callback);
   if(count == 1){  
     if(isWifi){
-      sendWifiData(ip, port, response);
+      sendWifiData(responseIp, responsePort, response);
     }
     else if(isBt){
       Serial3.println(response);
@@ -309,7 +304,7 @@ void sendResponse(String uartMethod){
   count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
   if(count == 1){  
     if(isWifi){
-      sendWifiData(ip, port, response);
+      sendWifiData(responseIp, responsePort, response);
     }
     else if(isBt){
       Serial3.println(response);
@@ -329,7 +324,7 @@ void sendResponse(String uartMethod){
     Serial.println(bin);
     
     if(isWifi){
-      sendWifiData(ip, port, bin);
+      sendWifiData(responseIp, responsePort, bin);
     }
     else if(isBt){
       Serial3.println(bin);
@@ -345,7 +340,7 @@ void sendResponse(String uartMethod){
     Serial.println(bin);
     
     if(isWifi){
-      sendWifiData(ip, port, bin);
+      sendWifiData(responseIp, responsePort, bin);
     }
     else if(isBt){
       Serial3.println(bin);
@@ -361,7 +356,7 @@ void sendResponse(String uartMethod){
     Serial.println(bin);
     
     if(isWifi){
-      sendWifiData(ip, port, bin);
+      sendWifiData(responseIp, responsePort, bin);
     }
     else if(isBt){
       Serial3.println(bin);
@@ -377,7 +372,7 @@ void sendResponse(String uartMethod){
     Serial.println(bin);
     
     if(isWifi){
-      sendWifiData(ip, port, bin);
+      sendWifiData(responseIp, responsePort, bin);
     }
     else if(isBt){
       Serial3.println(bin);
@@ -590,12 +585,6 @@ void makeCommands(String cmd){
       Serial.println(smsText);
       sendSms(smsText.c_str(), smsNum.c_str());
 
-      if(isWifi){
-        sendWifiData(ip, port, ok);
-      }
-      else if(isBt){
-        Serial3.println(ok);
-      }
     }
 
     // ----------------------------------------

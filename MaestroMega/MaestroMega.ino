@@ -150,8 +150,17 @@ void serialEvent2() {
   Serial.print("Serial2 data: ");
   Serial.print(commands);
   Serial.println();
-  isUsartA = false;
-  isUsartB = true;
+}
+
+
+// ---------------------------------------
+// Interrupción cuando arriva dato USB
+// ---------------------------------------
+void serialEvent3() {
+  commands = Serial3.readStringUntil('\r');
+  Serial.print("Serial3 data: ");
+  Serial.print(commands);
+  Serial.println();
 }
 
 
