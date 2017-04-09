@@ -129,6 +129,8 @@ String netCmd;
 String method = "";         // Método de alto nivel compuesto para extraer comandos de bajo nivel
 int intCmdKey = 0;
 int intCmdIr = 0;
+String str = "";
+String temp = "";
 
 
 void setup(){
@@ -170,12 +172,12 @@ void loop(){
     Serial1.end();
     setAuth(true); 
     c = kpd.getKey();
-    delay(30);               // Para rebote del teclado
+    delay(30);                      // Para rebote del teclado
     if(c){ 
-      if(c == 'B'){          // Habilitar modo de control mediante teclado
+      if(c == 'B'){                 // Habilitar modo de control mediante teclado
         modeSelected = 2;
       }
-      else if(c == 'C'){     // Cerrar sesion
+      else if(c == 'C'){            // Cerrar sesion
         resetArduino(true);
       }
     }
@@ -191,7 +193,7 @@ void loop(){
           resetArduino(true);            // Cerrar sesion
         }
       }
-      irrecv.resume();                 // Receive the next value
+      irrecv.resume();                   // Receive the next value
       delay(100);
     }
     
@@ -213,17 +215,23 @@ void loop(){
       clearAllArrays();
       readKeyStringUntil(cmdKey, 3, '#', 1, 2);         // Véase metodo 
       intCmdKey = atoi(cmdKey);                         // Convertir array a entero
-      // -----------------------------------------
-      // Procesar comando: setAllOut(16 bits)
-      // -----------------------------------------
+      // -------------------------------------------
+      // Procesar comando: setAllOut(16 bits) - 10
+      // -------------------------------------------
       if(intCmdKey == 10){ 
           setAllOutWrapper(KEY);
       }
-      // -----------------------------------------
-      // Procesar comando: getAllOut()
-      // -----------------------------------------
+      // --------------------------------------
+      // Procesar comando: getAllOut() - 11
+      // --------------------------------------
       else if(intCmdKey == 11){ 
         getAllOutWrapper(KEY);
+      }
+      // ------------------------------------
+      // Procesar comando: setOut() - 12
+      // ------------------------------------
+      else if(intCmdKey == 12){ 
+        setOutWrapper(KEY);
       }
       // Si el comando capturado por teclado no es valido
       else{
@@ -246,17 +254,23 @@ void loop(){
       clearAllArrays();
       readIrStringUntil(cmdIr, 3, IR_PWR, 1, 2);
       intCmdIr = atoi(cmdIr);
-      // -----------------------------------------
-      // Procesar comando: setAllOut(16 bits)
-      // -----------------------------------------
+      // -------------------------------------------
+      // Procesar comando: setAllOut(16 bits) - 10
+      // -------------------------------------------
       if(intCmdIr == 10){ 
         setAllOutWrapper(IR);
       }
-      // -----------------------------------------
-      // Procesar comando: getAllOut()
-      // -----------------------------------------
+      // -------------------------------------
+      // Procesar comando: getAllOut() - 11
+      // -------------------------------------
       else if(intCmdIr == 11){ 
         getAllOutWrapper(IR);
+      }
+      // -----------------------------------
+      // Procesar comando: setOut() - 12
+      // -----------------------------------
+      else if(intCmdIr == 12){ 
+        setOutWrapper(IR);
       }
       // Si el comando capturado por teclado no es valido
       else{
@@ -265,11 +279,7 @@ void loop(){
         delay(3000);
         clearAllArrays();
       }
-      
-      
-    
     }
-    
   }
   // Si el usuario no ha sido validado mediante TAG RF
   else{  
@@ -282,8 +292,9 @@ void loop(){
 
 
 /**
- * Método de convenienvia para encapsular el procesamiento del comando de
- * alto nivel, sólo eligiendo el modo por donde fue ordenado.
+ * Métodos de convenienvia para encapsular el procesamiento 
+ * de comandos de alto nivel, sólo eligiendo el modo por 
+ * donde fue ordenado.
  * 
  * int mode. IR o KEY.
  **/
@@ -296,8 +307,7 @@ void getAllOutWrapper(int mode){
   lcd.setCursor(0,1);
   method = "getAllOut()";
   makeCommands(method);
-  sendCmdsAndWait();
-  
+  sendCmdsAndWait(true);
   // Imprimir respuesta por pantalla LCD
   lcd.clear();
   if(mode == KEY){
@@ -322,12 +332,6 @@ void getAllOutWrapper(int mode){
   }
 }
 
-/**
- * Método de convenienvia para encapsular el procesamiento del comando de
- * alto nivel, sólo eligiendo el modo por donde fue ordenado.
- * 
- * int mode. IR o KEY.
- **/
 void setAllOutWrapper(int mode){
   lcd.clear();
   if(mode == KEY){
@@ -342,7 +346,6 @@ void setAllOutWrapper(int mode){
                "                     ", 
                "MUT.Salir PWR.Enviar ");
   }
-  
   lcd.setCursor(0,1);
   
   if(mode == KEY)
@@ -358,33 +361,22 @@ void setAllOutWrapper(int mode){
   method.concat(")");
 
   makeCommands(method);
+  sendCmdsAndWait(false);
   printToLcd(" Procesando comando ",
              "--------------------", 
              "  Espere...         ",
              "                    ");
   
-
-  for(int i = 0; i < CMD_LEN; i++){         
-      if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
-          Serial2.print(cmdsTo485[i]);  
-          Serial.print("<< cmd bajo nivel enviado: ");
-          Serial.print(cmdsTo485[i]);
-          Serial.println();
-          delay(500);
-          for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg
-            
-          }
-       }
-    }
-  
-//  sendCmdsAndWait();
-//  // Validar la respuesta de la tarjeta maestra
-//  for(int i = 0; i < CMD_LEN; i++){
-//    if(respFrom485[i] == "OK"){
-//      printToLcd("                    ",
-//                 "--------------------",
-//                 "  OK                ", 
-//                 "--------------------");
+//  for(int i = 0; i < CMD_LEN; i++){         
+//    if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
+//      Serial2.print(cmdsTo485[i]);  
+//      Serial.print("<< cmd bajo nivel enviado: ");
+//      Serial.print(cmdsTo485[i]);
+//      Serial.println();
+//      delay(500);
+//      for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg
+//            
+//      }
 //    }
 //  }
   clearAllArrays485();
@@ -392,33 +384,96 @@ void setAllOutWrapper(int mode){
   delay(2000);
 }
 
+
+/**
+ * Método de convenienvia para encapsular el procesamiento del 
+ * comando de alto nivel, sólo eligiendo el modo por donde fue 
+ * ordenado.
+ * 
+ * int mode. IR o KEY.
+ **/
+void setOutWrapper(int mode){
+  lcd.clear();
+  if(mode == KEY){
+    printToLcd(" setOut(bit,value)   ", 
+               "                     ", 
+               "                     ", 
+               " #. Enviar  C. Salir ");
+  }
+  else if(mode == IR){
+    printToLcd(" setOut(bit,value)   ", 
+               "                     ", 
+               "                     ", 
+               " MUT.Salir PWR.Enviar");
+  }
+  
+  lcd.setCursor(0,1);
+  
+  if(mode == KEY)
+    readKeyStringUntil(cmdArg, 4, '#',1, 1);    // Esperar argumentos del comando  
+  else if(mode == IR)
+    readIrStringUntil(cmdArg, 4, IR_PWR, 1, 1);
+  delay(100);
+  
+  method.concat("setOut(");
+  str = String(cmdArg);
+  Serial.print("str: "); Serial.println(str.length()); 
+  method = method + str.substring(0,2) + "," + str.substring(2,4) + ")";
+  
+  Serial.println(method);
+  
+  makeCommands(method);
+  sendCmdsAndWait(false);
+  printToLcd(" Procesando comando ",
+             "--------------------", 
+             "  Espere...         ",
+             "                    ");
+  
+//  for(int i = 0; i < CMD_LEN; i++){         
+//    if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
+//      Serial2.print(cmdsTo485[i]);  
+//      Serial.print("<< cmd bajo nivel enviado: ");
+//      Serial.print(cmdsTo485[i]);
+//      Serial.println();
+//      delay(500);
+//      for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg  
+//      }
+//    }
+//  }
+  clearAllArrays485();
+  method = "";
+  delay(2000);
+}
+
+
 /**
  * Itera el array cmdsTo485 para enviar los comandos de bajo nivel a la
  * tarjeta maestra, espera durante un par se segundos para obtener respuesta,
  * almacenando éstas para colocarlas en el array respFrom485.
  **/
-void sendCmdsAndWait(){
+void sendCmdsAndWait(boolean receive){
   for(int i = 0; i < CMD_LEN; i++){         
-      if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
-          Serial2.print(cmdsTo485[i]);  
-          Serial.print("<< cmd bajo nivel enviado: ");
-          Serial.print(cmdsTo485[i]);
-          Serial.println();
-          delay(500);
-          for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg
-            // Leer respuesta de la tarjeta maestra
-            if(Serial2.available() > 0){
-              input = Serial2.readStringUntil('\r');
-              Serial.print("resp:");
-              Serial.println(input);
-              if(isStringNum(input) == true){
-                respFrom485[i] = input;
-              }
+    if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
+      Serial2.print(cmdsTo485[i]);  
+      Serial.print("<< cmd bajo nivel enviado: ");
+      Serial.print(cmdsTo485[i]);
+      Serial.println();
+      delay(500);
+      for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg
+        // Leer respuesta de la tarjeta maestra
+        if(receive){
+          if(Serial2.available() > 0){
+            input = Serial2.readStringUntil('\r');
+            Serial.print("resp:");
+            Serial.println(input);
+            if(isStringNum(input) == true){
+              respFrom485[i] = input;
             }
           }
-       }
+        }
+      }
     }
-    
+  }  
 }
 
 
@@ -522,7 +577,6 @@ void makeCommands(String cmd){
     count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
     // Traducir método a comandos de bajo nivel
     if(count == 1){    
-      Serial.println("*********** setOut(int salida, int valor)");
       // Extraer argumentos del método 
       method = String(cCmd);
       method.trim();                    

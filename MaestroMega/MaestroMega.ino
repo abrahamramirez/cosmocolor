@@ -2,6 +2,7 @@
 #include <StringTokenizer.h>
 #include <Wire.h>
 #include "max6675.h"
+
 const int ledPin =  13;      // Numero del pin para el Led
 
 int thermoDO = 4;
@@ -87,6 +88,10 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
   Serial2.begin(9600);
+  Serial.println("----------------------------");
+  Serial.println(" Inicializando Maestro Mega ");
+  Serial.println("----------------------------");
+  
   pinMode(ledPin, OUTPUT);    //inicializamos el pin del Led como salida
   pinMode(in12V1, INPUT);
   pinMode(in12V2, INPUT);
@@ -232,7 +237,7 @@ void loop() {
       int j = i - 22;
       outputs[j] = getBit(i);
     }
-    sprintf(buffer, "%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d", 
+    sprintf(buffer, "%d%d%d%d%d%d%d %d%d%d%d%d%d%d %d%d%d%d%d%d%d", 
             outputs[0],outputs[1],outputs[2],outputs[3],
             outputs[4],outputs[5],outputs[6],outputs[7],
             outputs[8],outputs[9],outputs[10],outputs[11],
@@ -334,9 +339,9 @@ void setI2CBit(int bit1,  int val){
  * 
  * int bit. Número de salida a modificar.
  **/
-boolean getBit(int bit1){
+int getBit(int bit1){
   int port = 0;
-  boolean resp = false;
+  int resp = 0;
   
   // Micro A: salidas 0-7
   if(bit1 >= 0 && bit1 <= 7){ 
@@ -354,7 +359,12 @@ boolean getBit(int bit1){
     delay(100);
   }
 
-  // Micro Mtro: entradas +12V: 22-28
+  // Micro Mtro: entradas +12V: 22-28. || Entradas negadas!!!
+  else if(bit1 >= 22 && bit1 <= 28){
+    resp = !digitalRead(bit1);
+    delay(100);
+  }
+  
   // Micro Mtro: entradas +24V: 29-35
   // Micro Mtro: entradas +5V:  36-42
   else if(bit1 >= 22 && bit1 <= 42){
