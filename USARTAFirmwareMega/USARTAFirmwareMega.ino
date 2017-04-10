@@ -69,7 +69,7 @@ AltSoftSerial  gpsPort;             // RX = 48 and TX = 46
 
 #define RS485_PIN 13                // Pin de control de red 485 
 #define CMD_LEN 20                  // Número de comandos de bajo nivel en el array 
-String responseIp = "192.168.1.82";
+String responseIp = "192.168.1.74";
 String responsePort = "55056";
 String methodFromUart = "";         // Funcion de alto nivel recibido desde cualquier UART
 int total = 0;                      // Total de comandos de bajo nivel generados a partir de funció de alto nivel
@@ -110,7 +110,7 @@ void setup() {
   Serial.println("--------------------------");
   Serial.println(" Inicializando USART A... ");
   Serial.println("--------------------------");
-  
+  Serial.println(" Espera 15 segundos       ");
   
   Serial3.println(" ");
   Serial3.println(" ");
@@ -122,7 +122,7 @@ void setup() {
 
 //  configGsm();
   
-  delay(3000);
+  delay(15000);
   Serial.println("");
   Serial.print("IP: ");
   String expected[] = {"OK", "ERROR"};

@@ -193,9 +193,6 @@ void serialEvent3() {
 
 
 void loop() {
-  translateCommand(commands);
-  delay(300);
-  
   // --------------------------------
   // Comandos para alterar salidas
   // --------------------------------
@@ -275,11 +272,11 @@ void loop() {
     Serial.println(buffer);
     delay(100);
   }
+  
+  translateCommand(commands);
+  delay(300);
+  
   commands = "";
-
-
-  
-  
   delay(300);
 }
 
@@ -374,12 +371,8 @@ void translateCommand(String cmd){
       method.replace("getIn(", "");
       method.replace(")", "");
 
-      // Extraer argumentos del método y completar a 2 cifras
-//      sTemp = completeZeros(method, 2);
-           
-      // Añadir comandos de bajo nivel a array
-//      cmdsTo485[index] = "@G" + sTemp + "#";
-//      setSourceCmd(index);
+      Serial3.println(getBit(method.toInt()));
+      delay(100);
     }
     
     // ------------------------------------------------
@@ -406,11 +399,10 @@ void translateCommand(String cmd){
       sVal = method.substring(method.length() - 1, method.length());
    
       // Añadir comandos de bajo nivel a array
-//      int bit1 = sBit.toInt();
-//      int val = sVal.toInt();
-//      sTemp = completeZeros(String(getSwapBit(bit1)), 2);
-//      str = "@S" + sTemp + val + endChar;
-//      cmdsTo485[index] = str;
+      int bit1 = sBit.toInt();
+      int val = sVal.toInt();
+      setI2CBit(bit1,  val);
+      delay(100);
     }
 
     // ----------------------------------------
@@ -418,14 +410,18 @@ void translateCommand(String cmd){
     // ----------------------------------------
     count = ms.GlobalMatch("getAllOut%(%)", match_callback);   
     if(count == 1){
-      index = 0;
-//      cmdsTo485[index] = inputA;
-//      setSourceCmd(index);
-//      index++;
-//      
-//      cmdsTo485[index] = inputB;
-//      setSourceCmd(index);
-//      index++;
+      int outputs[17];
+      char buffer[17];
+      for(int i = 0; i <= 15; i++){
+        outputs[i] = getBit(i);
+      } 
+      sprintf(buffer, "%d%d%d%d%d%d%d%d %d%d%d%d%d%d%d%d ", 
+              outputs[7],outputs[6],outputs[5],outputs[4],
+              outputs[3],outputs[2],outputs[1],outputs[0],
+              outputs[15],outputs[14],outputs[13],outputs[12],
+              outputs[11],outputs[10],outputs[9],outputs[8]
+              );
+      Serial3.println(buffer);
     }
 
     // ----------------------------------------
@@ -434,38 +430,25 @@ void translateCommand(String cmd){
     count = ms.GlobalMatch("getAllIn%(%)", match_callback);   
     if(count == 1){
       index = 0;
-//      cmdsTo485[index] = "@I#";
-//      setSourceCmd(index);
-//      index++;
+      int outputs[22];
+      char buffer[22];
+      for(int i = 22; i <= 42; i++){
+        int j = i - 22;
+        outputs[j] = getBit(i);
+      }
+      sprintf(buffer, "%d%d%d%d%d%d%d %d%d%d%d%d%d%d %d%d%d%d%d%d%d", 
+              outputs[0],outputs[1],outputs[2],outputs[3],
+              outputs[4],outputs[5],outputs[6],outputs[7],
+              outputs[8],outputs[9],outputs[10],outputs[11],
+              outputs[12],outputs[13],outputs[14],outputs[15],
+              outputs[16],outputs[17],outputs[18],outputs[19],
+              outputs[20]
+              );
+      Serial3.println(buffer);
+      delay(100);
     }
 
-    // --------------------------------------------------
-    // Validar función: sendMsg(String msg, String num)
-    // --------------------------------------------------
-    count = ms.GlobalMatch("sendMsg%(%\"[%a%d%p%s]+%\",\"[0-9]+\"%)", match_callback); 
-    if(count == 1){
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("sendMsg(", "");
-      method.replace(")", "");
-      method.replace("\"", "");
-      
-      for(int i = 0; i <= method.length(); i++){
-          char ch = method.charAt(i);
-          if(ch != ','){
-            smsText.concat(ch);
-          }
-          else  
-            break;
-      }
-//      smsNum = method.substring(method.length() - 10, method.length());
-//      Serial.println(smsNum);
-//      Serial.println(smsText);
-//      sendSms(smsText.c_str(), smsNum.c_str());
-    }
+    
   } 
 }
 
