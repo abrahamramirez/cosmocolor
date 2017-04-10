@@ -253,7 +253,7 @@ void loop() {
    **/
   for(i = 0; i < CMD_LEN; i++){         
     if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
-      port485.print(cmdsTo485[i]);
+      port485.println(cmdsTo485[i]);
       Serial.print("<< cmd enviado: ");
       Serial.print(cmdsTo485[i]);
       Serial.println();
@@ -536,7 +536,7 @@ void makeCommands(String cmd){
     // -----------------------------------------
     count = ms.GlobalMatch("setAllOut%([0-1]+%)", match_callback); 
     if(count == 1){ 
-      cmdsTo485[index] = String(cCmd) + "\r";   
+      cmdsTo485[index] = String(cCmd) + "#";   
     }
 
     // -----------------------------------------
@@ -842,7 +842,7 @@ int sendAndWait(char* atCommand, String expected[], int expectedSize, int latenc
 boolean isStringNum(String s){
   char* cCmd = s.c_str();
   MatchState ms (cCmd);
-  count = ms.GlobalMatch("[0-9]+", match_callback); 
+  count = ms.GlobalMatch("[0-9.]+", match_callback); 
   if(count == 1){      
     return true;
   }

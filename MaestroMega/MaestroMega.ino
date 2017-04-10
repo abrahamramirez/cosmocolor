@@ -27,11 +27,19 @@ void match_callback  (const char * match,          // matching string (not null-
 
 const int ledPin =  13;      // Numero del pin para el Led
 
-int thermoDO = 4;
-int thermoCS = 5;
-int thermoCLK = 6;
+//Pines a usarse en la tarjeta de termopar
+const int DO1 = 2; //azul
+const int CS1 = 3; //amarillo
+const int CLK1 = 4;//verde
 
-MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+const int DO2 = 5; //azul
+const int CS2 = 6; //amarillo
+const int CLK2 = 7;//verde
+
+MAX6675 TERMOK1(CLK1,CS1,DO1);
+MAX6675 TERMOK2(CLK2,CS2,DO2);
+
+int muestras = 10;      // Numero de muestras para el termomar
 
 const String phone = "+527711819555";  
 unsigned long count;                // Contador coincidencias al validar reg exp
@@ -164,8 +172,8 @@ boolean isUsartB = false;
 // Interrupción cuando arriva dato USARTA
 // ---------------------------------------
 void serialEvent1() {
-  commands = Serial1.readStringUntil('\r');
-  Serial.print("Serial1 data: ");
+  commands = Serial1.readStringUntil('#');
+  Serial.print("USART A data: ");
   Serial.print(commands);
   Serial.println();
 }
@@ -175,7 +183,7 @@ void serialEvent1() {
 // ---------------------------------------
 void serialEvent2() {
   commands = Serial2.readStringUntil('\r');
-  Serial.print("Serial2 data: ");
+  Serial.print("USART B data: ");
   Serial.print(commands);
   Serial.println();
 }
@@ -186,7 +194,7 @@ void serialEvent2() {
 // ---------------------------------------
 void serialEvent3() {
   commands = Serial3.readStringUntil('\r');
-  Serial.print("Serial3 data: ");
+  Serial.print("USB data: ");
   Serial.print(commands);
   Serial.println();
 }
@@ -391,6 +399,19 @@ void translateCommand(String cmd){
         Serial1.println(analogRead(bit1));
         Serial2.println(analogRead(bit1));
         Serial3.println(analogRead(bit1));
+      }
+      else if(bit1 >= 80 && bit1 <= 81){
+        float temp = 0;
+        if(bit1 == 80){
+          temp = TERMOK1.readCelsius();
+        }
+        else if(bit1 == 81){
+          temp = TERMOK2.readCelsius();
+        }
+        Serial.print("response: "); Serial.println(temp);
+        Serial1.println(temp);
+        Serial2.println(temp);
+        Serial3.println(temp);
       }
       delay(100);
     }

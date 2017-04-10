@@ -138,7 +138,7 @@ void setup(){
   Serial1.begin(9600);
   Serial2.begin(9600);
   Serial.println("--------------------- ");
-  Serial.println("   Iniciando USATTB   ");
+  Serial.println("   Iniciando USARTB   ");
   Serial.println("--------------------- ");
   initLcd();
   
@@ -158,7 +158,6 @@ void setup(){
   
 //  EEPROM.writeBlock(1, tag1);
   isValidated = isAuth();
-  isValidated = true;
 }
 
  
@@ -305,15 +304,18 @@ void getAllOutWrapper(int mode){
              "  Espere...         ",
              "                    ");
   lcd.setCursor(0,1);
-  method = "getAllOut()";
-  makeCommands(method);
+
+  method = method + "getAllOut()" + "\r";
+  cmdsTo485[0] = method;
   sendCmdsAndWait(true);
+  
   // Imprimir respuesta por pantalla LCD
   lcd.clear();
+  Serial.print("respFrom485: "); Serial.print(getBinary(respFrom485[0].toInt(), 16).c_str());
   if(mode == KEY){
     printToLcd( "     Respuesta:     ",
-                getBinary(respFrom485[0].toInt(), 8).c_str(), 
-                getBinary(respFrom485[1].toInt(), 8).c_str(), 
+                getBinary(respFrom485[0].toInt(), 16).c_str(),
+                "",
                 " C. Salir            ");
   }
   else if(mode == IR){
@@ -332,6 +334,9 @@ void getAllOutWrapper(int mode){
   }
 }
 
+// ************************************
+//
+//
 void setAllOutWrapper(int mode){
   lcd.clear();
   if(mode == KEY){
@@ -356,29 +361,14 @@ void setAllOutWrapper(int mode){
   Serial.println(cmdArg);
   delay(100);
   
-  method.concat("setAllOut(");
-  method.concat(String(cmdArg));
-  method.concat(")");
-
-  makeCommands(method);
+  method = method + "setAllOut(" + String(cmdArg) + ")" + "\r";
+  cmdsTo485[0] = method;
   sendCmdsAndWait(false);
+  
   printToLcd(" Procesando comando ",
              "--------------------", 
              "  Espere...         ",
              "                    ");
-  
-//  for(int i = 0; i < CMD_LEN; i++){         
-//    if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
-//      Serial2.print(cmdsTo485[i]);  
-//      Serial.print("<< cmd bajo nivel enviado: ");
-//      Serial.print(cmdsTo485[i]);
-//      Serial.println();
-//      delay(500);
-//      for (unsigned long start = millis(); millis() - start < 2000;){   // Verdaderamente procesar en 1 seg
-//            
-//      }
-//    }
-//  }
   clearAllArrays485();
   method = "";
   delay(2000);
@@ -422,7 +412,7 @@ void setOutWrapper(int mode){
   
   Serial.println(method);
   
-  makeCommands(method);
+//  makeCommands(method);
   sendCmdsAndWait(false);
   printToLcd(" Procesando comando ",
              "--------------------", 
@@ -464,7 +454,7 @@ void sendCmdsAndWait(boolean receive){
         if(receive){
           if(Serial2.available() > 0){
             input = Serial2.readStringUntil('\r');
-            Serial.print("resp:");
+            Serial.print("resp: ");
             Serial.println(input);
             if(isStringNum(input) == true){
               respFrom485[i] = input;
@@ -477,208 +467,6 @@ void sendCmdsAndWait(boolean receive){
 }
 
 
-/**
- * Genera comandos de bajo nivel en el array "cmds485" dado un método de alto
- * nivel.
- * 
- * String function. Método de alto nivel con argumentos.
- * 
- * Retorna. Int, número de comandos añadidos al array.
- **/
-void makeCommands(String cmd){
-  String method = "";     // Método de alto nivel procedente de cualquier medio UART
-  String smsNum = "";
-  String smsText = "";
-  String output = "";
-  String str = "";
-  String sTemp = "";
-  String sTemp2 = ""; 
-  String endChar = "#";
-  String inputA = "@VA#";
-  String inputB = "@VB#";
-  int temp = 0;  
-  int index = 0;          // Índice del array de comandos de bajo nivel
-  int val = 0;
-  int val2 = 0;
-  String s = "";
-  String mIndex = "";      
-  String mVal = "";
-  String sBit = "";
-  String sVal = "";
-  int iIndex = 0;
-  int iVal = 0;
-
-  if(!cmd.equals("")){
-    char* cCmd = cmd.c_str();
-    MatchState ms (cCmd);
-    // -----------------------------------------
-    // Validar función: setAllOut(16 bits)
-    // -----------------------------------------
-    count = ms.GlobalMatch("setAllOut%([0-1]+%)", match_callback); 
-    // Traducir método a comandos de bajo nivel
-    if(count == 1){    
-      Serial.println("*********** setAllOut(16 bits)");
-      // Extraer argumentos del método <<< caso inicial 16 bits >>>
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("setAllOut(", "");
-      method.replace(")", "");
-      
-      sTemp = method.substring(0, 8);
-      sTemp2 = method.substring(8, 16);
-
-      // Convertir binario a decimal
-      val = strtol(sTemp.c_str(), NULL, 2);  
-      val2 = strtol(sTemp2.c_str(), NULL, 2); 
-
-      // Convertir decimal a String para componer comandos de bajo nivel
-      s = String(val);
-      sTemp = completeZeros(s, 3);
-      s = String(val2);
-      sTemp2 = completeZeros(s, 3);
-           
-      // Añadir comandos de bajo nivel a array
-      output = "@A" + sTemp + endChar;
-      cmdsTo485[index] = output;
-      index++;
-
-      output = "@B" + sTemp2 + endChar;
-      cmdsTo485[index] = output;
-      index++;
-    }
-
-    // -----------------------------------------
-    // Validar función: getOut(int bit)
-    // -----------------------------------------
-    count = ms.GlobalMatch("getOut%([0-9]+%)", match_callback); 
-    // Traducir método a comandos de bajo nivel
-    if(count == 1){    
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("getOut(", "");
-      method.replace(")", "");
-
-      // Extraer argumentos del método y completar a 2 cifras
-      sTemp = completeZeros(method, 2);
-           
-      // Añadir comandos de bajo nivel a array
-      cmdsTo485[index] = "@G" + sTemp + "#";
-//      index++;
-    }
-
-    // ------------------------------------------------
-    // Validar función: setOut(int salida, int valor)
-    // ------------------------------------------------
-    count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
-    // Traducir método a comandos de bajo nivel
-    if(count == 1){    
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("setOut(", "");
-      method.replace(")", "");
-      
-      for(int i = 0; i <= method.length(); i++){
-          char ch = method.charAt(i);
-          if(ch != ','){
-            sBit.concat(ch);
-          }
-          else  
-            break;
-      }
-      sVal = method.substring(method.length() - 1, method.length());
-      
-      // Añadir comandos de bajo nivel a array
-      int bit1 = sBit.toInt();
-      int val = sVal.toInt();
-
-      sTemp = completeZeros(sBit, 2);
-
-      str = "@S" + sTemp + val + endChar;
-      cmdsTo485[index] = str;
-    }
-
-    // ----------------------------------------
-    // Validar función: getAllOut()
-    // ----------------------------------------
-    count = ms.GlobalMatch("getAllOut%(%)", match_callback);   
-    if(count == 1){
-      Serial.println("********* getAllOut()");
-      index = 0;
-      cmdsTo485[index] = inputA;
-      index++;
-      
-      cmdsTo485[index] = inputB;
-      index++;
-    }
-
-    // ----------------------------------------
-    // Validar función: getAllIn()
-    // ----------------------------------------
-    count = ms.GlobalMatch("getAllIn%(%)", match_callback);   
-    if(count == 1){
-      Serial.println("********* getAllIn()");
-      index = 0;
-      cmdsTo485[index] = "@VPCD#";
-      index++;
-    }
-
-    // --------------------------------------------------
-    // Validar función: sendMsg(String msg, String num)
-    // --------------------------------------------------
-    count = ms.GlobalMatch("sendMsg%(%\"[%a%d%p%s]+%\",\"[0-9]+\"%)", match_callback); 
-    if(count == 1){
-//      Serial.println("******** sendMsg()");
-//      // Extraer argumentos del método 
-//      method = String(cCmd);
-//      method.trim();                    
-//      method.replace("\r", "");
-//      method.replace("\n", "");
-//      method.replace("sendMsg(", "");
-//      method.replace(")", "");
-//      method.replace("\"", "");
-//      
-//      for(int i = 0; i <= method.length(); i++){
-//          char ch = method.charAt(i);
-//          if(ch != ','){
-//            smsText.concat(ch);
-//          }
-//          else  
-//            break;
-//      }
-//      smsNum = method.substring(method.length() - 10, method.length());
-//      Serial.println(smsNum);
-//      Serial.println(smsText);
-//      sendSms(smsText.c_str(), smsNum.c_str());
-//
-//      if(isWifi){
-//        sendWifiData(ip, port, ok);
-//      }
-//      else if(isBt){
-//        Serial3.println(ok);
-//      }
-    }
-
-    // ----------------------------------------
-    // Validar función: getGpsPos()
-    // ----------------------------------------
-    count = ms.GlobalMatch("getGpsPos%(%)", match_callback);   
-    if(count == 1){
-      Serial.println("********* getGpsPos()");
-//      getGpsInfo();
-      index = 0;
-      cmdsTo485[index] = "@ADC00#";
-      index++;
-    }
-  } 
-}
 
 
 /**
