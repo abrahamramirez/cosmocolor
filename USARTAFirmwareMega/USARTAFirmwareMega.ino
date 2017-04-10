@@ -29,7 +29,6 @@ void match_callback  (const char * match,          // matching string (not null-
   char cap [10];   // must be large enough to hold captures
   
   Serial.print ("Matched: ");
-//  Serial.write ((byte *) match, length);
   String str485 = String(match);
   Serial.println (str485);
   Serial.println ();
@@ -58,15 +57,12 @@ void match_callback  (const char * match,          // matching string (not null-
 //   A       0-7
 //   B       8-16
 //
-// PIC | Puerto | Entradas
-//  C      D       0-7
 //              
 //
 //
 
 SoftwareSerial port485(10, 11);     // RX = 10 and TX = 11
 AltSoftSerial  gpsPort;             // RX = 48 and TX = 46
-
 #define RS485_PIN 13                // Pin de control de red 485 
 #define CMD_LEN 20                  // Número de comandos de bajo nivel en el array 
 String responseIp = "192.168.1.74";
@@ -257,8 +253,8 @@ void loop() {
    **/
   for(i = 0; i < CMD_LEN; i++){         
     if(!cmdsTo485[i].equals("")){   // Iterar array de comandos de bajo nivel y enviar si es válido
-      port485.print(cmdsTo485[i]);  
-      Serial.print("<< cmd bajo nivel enviado: ");
+      port485.print(cmdsTo485[i]);
+      Serial.print("<< cmd enviado: ");
       Serial.print(cmdsTo485[i]);
       Serial.println();
       delay(500);
@@ -334,16 +330,14 @@ String getGps(){
       longDir = parsePtr[0];
     }
     // Componer String para devolver
-    if(gpsLat != 0 && gpsLong != 0 && latDir != 0 && longDir != 0){
-      if(latDir == 'S'){
-        gpsLat *= -1;
-      }
-      if(longDir == 'W'){
-        gpsLong *= -1;
-      }
-      ret = String(gpsLat, 4) + "@" + String(gpsLong, 4);
-//      Serial.print("GPS: "); Serial.println(ret);
+    if(latDir == 'S'){
+      gpsLat *= -1;
     }
+    if(longDir == 'W'){
+      gpsLong *= -1;
+    }
+    ret = String(gpsLat, 4) + "@" + String(gpsLong, 4);
+    Serial.print("GPS: "); Serial.println(ret);
   }
   return ret;
 }
@@ -356,7 +350,7 @@ uint32_t parsedecimal(char *str) {
       d *= 10;
       d += str[0] - '0';
       str++;
-    }
+  }
   return d;
 }
 
@@ -365,6 +359,7 @@ void readline(void) {
   buffidx = 0;
   while(1) {
     c = gpsPort.read();
+    Serial.print(c);
     if (c == -1)
       continue;
     if (c == '\n')
@@ -420,11 +415,7 @@ void sendResponse(String uartMethod){
   }
   count = ms.GlobalMatch("getAllOut%(%)", match_callback);   
   if(count == 1){
-    // Componer número binario de N bits
-    int ad = respFrom485[0].toInt();
-    int bd = respFrom485[1].toInt();
-    bin = getBinary(ad, 8);
-    bin.concat(getBinary(bd, 8));
+    bin = respFrom485[0];
     Serial.print("BIN: ");
     Serial.println(bin);
     
@@ -488,14 +479,15 @@ void sendResponse(String uartMethod){
   }
   count = ms.GlobalMatch("getGpsPos%(%)", match_callback);
   if(count == 1){ 
+    String s = getGps();
     if(isWifi){
-      sendWifiData(responseIp, responsePort, gpsPos);
+      sendWifiData(responseIp, responsePort, s);
     }
     else if(isBt){
-      Serial3.println(gpsPos);
+      Serial3.println(s);
     }
     else if(isGsm){
-      sendSms(gpsPos.c_str(), phone.c_str());
+      sendSms(s.c_str(), phone.c_str());
     }
   }
 }
@@ -538,42 +530,13 @@ void makeCommands(String cmd){
   if(!cmd.equals("")){
     char* cCmd = cmd.c_str();
     MatchState ms (cCmd);
+    index = 0;
     // -----------------------------------------
     // Validar función: setAllOut(16 bits)
     // -----------------------------------------
     count = ms.GlobalMatch("setAllOut%([0-1]+%)", match_callback); 
-    if(count == 1){    
-      // Extraer argumentos del método
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("setAllOut(", "");
-      method.replace(")", "");
-      
-      sTemp = method.substring(0, 8);
-      sTemp2 = method.substring(8, 16);
-
-      // Convertir binario a decimal
-      val = strtol(sTemp.c_str(), NULL, 2);  
-      val2 = strtol(sTemp2.c_str(), NULL, 2); 
-
-      // Convertir decimal a String para componer comandos de bajo nivel
-      s = String(val);
-      sTemp = completeZeros(s, 3);
-      s = String(val2);
-      sTemp2 = completeZeros(s, 3);
-           
-      // Añadir comandos de bajo nivel a array
-      output = "@A" + sTemp + endChar;
-      cmdsTo485[index] = output;
-      setSourceCmd(index);
-      index++;
-
-      output = "@B" + sTemp2 + endChar;
-      cmdsTo485[index] = output;
-      setSourceCmd(index);
-      index++;
+    if(count == 1){ 
+      cmdsTo485[index] = String(cCmd) + "\r";   
     }
 
     // -----------------------------------------
@@ -581,41 +544,15 @@ void makeCommands(String cmd){
     // -----------------------------------------
     count = ms.GlobalMatch("getOut%([0-9]+%)", match_callback);
     if(count == 1){    
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("getOut(", "");
-      method.replace(")", "");
-
-      // Extraer argumentos del método y completar a 2 cifras
-      sTemp = completeZeros(String(getSwapBit(method.toInt())), 2);
-        
-      // Añadir comandos de bajo nivel a array
-      cmdsTo485[index] = "@G" + sTemp + "#";
-      setSourceCmd(index);
+      cmdsTo485[index] = String(cCmd) + "\r"; 
     }
 
     // -----------------------------------------
     // Validar función: getIn(int bit)
     // -----------------------------------------
     count = ms.GlobalMatch("getIn%([0-9]+%)", match_callback);
-    if(count == 1){    
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("getIn(", "");
-      method.replace(")", "");
-
-      // Extraer argumentos del método y completar a 2 cifras
-      sTemp = completeZeros(method, 2);
-           
-      // Añadir comandos de bajo nivel a array
-      cmdsTo485[index] = "@G" + sTemp + "#";
-      setSourceCmd(index);
+    if(count == 1){   
+      cmdsTo485[index] = String(cCmd) + "\r";
     }
     
     // ------------------------------------------------
@@ -623,30 +560,7 @@ void makeCommands(String cmd){
     // ------------------------------------------------
     count = ms.GlobalMatch("setOut%([0-9]+,[0-1]+%)", match_callback); 
     if(count == 1){    
-      // Extraer argumentos del método 
-      method = String(cCmd);
-      method.trim();                    
-      method.replace("\r", "");
-      method.replace("\n", "");
-      method.replace("setOut(", "");
-      method.replace(")", "");
-      
-      for(int i = 0; i <= method.length(); i++){
-          char ch = method.charAt(i);
-          if(ch != ','){
-            sBit.concat(ch);
-          }
-          else  
-            break;
-      }
-      sVal = method.substring(method.length() - 1, method.length());
-   
-      // Añadir comandos de bajo nivel a array
-      int bit1 = sBit.toInt();
-      int val = sVal.toInt();
-      sTemp = completeZeros(String(getSwapBit(bit1)), 2);
-      str = "@S" + sTemp + val + endChar;
-      cmdsTo485[index] = str;
+      cmdsTo485[index] = String(cCmd) + "\r";
     }
 
     // ----------------------------------------
@@ -654,14 +568,7 @@ void makeCommands(String cmd){
     // ----------------------------------------
     count = ms.GlobalMatch("getAllOut%(%)", match_callback);   
     if(count == 1){
-      index = 0;
-      cmdsTo485[index] = inputA;
-      setSourceCmd(index);
-      index++;
-      
-      cmdsTo485[index] = inputB;
-      setSourceCmd(index);
-      index++;
+      cmdsTo485[index] = String(cCmd) + "\r";
     }
 
     // ----------------------------------------
@@ -669,10 +576,7 @@ void makeCommands(String cmd){
     // ----------------------------------------
     count = ms.GlobalMatch("getAllIn%(%)", match_callback);   
     if(count == 1){
-      index = 0;
-      cmdsTo485[index] = "@I#";
-      setSourceCmd(index);
-      index++;
+      cmdsTo485[index] = String(cCmd) + "\r";
     }
 
     // --------------------------------------------------
@@ -702,7 +606,6 @@ void makeCommands(String cmd){
       Serial.println(smsText);
       sendSms(smsText.c_str(), smsNum.c_str());
     }
-
     // ----------------------------------------
     // Validar función: getGpsPos()
     // ----------------------------------------
@@ -718,6 +621,16 @@ void makeCommands(String cmd){
   } 
 }
 
+
+int getAnalog(int val){
+  if(val == 80) return A0;
+  if(val == 81) return A1;
+  if(val == 82) return A2;
+  if(val == 83) return A3;
+  if(val == 84) return A4;
+  if(val == 85) return A5;
+  if(val == 86) return A6;
+}
 
 /**
  * Retorna el bit equivalente para ajustar las salidas, p.e.

@@ -33,8 +33,8 @@ void setup(){
       break;
     }
   }
-  if(timeout == 100)
-    Serial.println("TIMEOUT_ERROR");  
+  if(timeout == 150)
+    Serial.println("ERROR");  
   else{
     Udp.begin(localUdpPort);
     beginUdp = true;

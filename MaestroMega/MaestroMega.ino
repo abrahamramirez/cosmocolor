@@ -36,6 +36,8 @@ MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 const String phone = "+527711819555";  
 unsigned long count;                // Contador coincidencias al validar reg exp
 
+#define A16 50
+
 // Entradas a +12V nativas
 const int in12V1 =  22;      
 const int in12V2 =  23;      
@@ -112,7 +114,7 @@ void setup() {
   Serial3.begin(9600);
   
   Serial.println("------------------------------");
-  Serial.println(" Inicializando Maestro Mega   ");
+  Serial.println(" Inicializando Maestro Mega 1 ");
   Serial.println("------------------------------");
   
   pinMode(ledPin, OUTPUT);    //inicializamos el pin del Led como salida
@@ -162,19 +164,17 @@ boolean isUsartB = false;
 // Interrupción cuando arriva dato USARTA
 // ---------------------------------------
 void serialEvent1() {
-  commands = Serial1.readStringUntil('#');
+  commands = Serial1.readStringUntil('\r');
   Serial.print("Serial1 data: ");
   Serial.print(commands);
   Serial.println();
-  isUsartA = true;
-  isUsartB = false;
 }
 
 // ---------------------------------------
 // Interrupción cuando arriva dato USARTB
 // ---------------------------------------
 void serialEvent2() {
-  commands = Serial2.readStringUntil('#');
+  commands = Serial2.readStringUntil('\r');
   Serial.print("Serial2 data: ");
   Serial.print(commands);
   Serial.println();
@@ -274,7 +274,6 @@ void loop() {
   }
   
   translateCommand(commands);
-  delay(300);
   
   commands = "";
   delay(300);
@@ -338,6 +337,9 @@ void translateCommand(String cmd){
       delay(100);
       writeI2C(0XB0, val2);
       delay(100);
+      Serial.println("OK");
+      Serial1.println("OK");
+      Serial2.println("OK");
       Serial3.println("OK");
     }
 
@@ -353,7 +355,10 @@ void translateCommand(String cmd){
       method.replace("\n", "");
       method.replace("getOut(", "");
       method.replace(")", "");
-        
+      
+      Serial.println(getBit(getSwapBit(method.toInt())));
+      Serial1.println(getBit(getSwapBit(method.toInt())));
+      Serial2.println(getBit(getSwapBit(method.toInt())));
       Serial3.println(getBit(getSwapBit(method.toInt())));
       delay(100);
     }
@@ -371,7 +376,22 @@ void translateCommand(String cmd){
       method.replace("getIn(", "");
       method.replace(")", "");
 
-      Serial3.println(getBit(method.toInt()));
+      int bit1 = method.toInt();
+      Serial.print("getIn(): "); Serial.println(bit1);
+      
+      if(bit1 >= 22 && bit1 <= 42){
+        Serial.print("response: "); Serial.print(getBit(bit1));
+        Serial1.println(getBit(bit1));
+        Serial2.println(getBit(bit1));
+        Serial3.println(getBit(bit1));
+      }
+      else if(bit1 >= 54 && bit1 <= 59){
+        Serial.print("response: "); Serial.println(analogRead(bit1));
+        Serial.println(analogRead(bit1));
+        Serial1.println(analogRead(bit1));
+        Serial2.println(analogRead(bit1));
+        Serial3.println(analogRead(bit1));
+      }
       delay(100);
     }
     
@@ -401,7 +421,11 @@ void translateCommand(String cmd){
       // Añadir comandos de bajo nivel a array
       int bit1 = sBit.toInt();
       int val = sVal.toInt();
-      setI2CBit(bit1,  val);
+      setI2CBit(getSwapBit(bit1),  val);
+      Serial.println("OK");
+      Serial1.println("OK");
+      Serial2.println("OK");
+      Serial3.println("OK");
       delay(100);
     }
 
@@ -415,12 +439,15 @@ void translateCommand(String cmd){
       for(int i = 0; i <= 15; i++){
         outputs[i] = getBit(i);
       } 
-      sprintf(buffer, "%d%d%d%d%d%d%d%d %d%d%d%d%d%d%d%d ", 
+      sprintf(buffer, "%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d ", 
               outputs[7],outputs[6],outputs[5],outputs[4],
               outputs[3],outputs[2],outputs[1],outputs[0],
               outputs[15],outputs[14],outputs[13],outputs[12],
               outputs[11],outputs[10],outputs[9],outputs[8]
               );
+      Serial.println(buffer);
+      Serial1.println(buffer);
+      Serial2.println(buffer);        
       Serial3.println(buffer);
     }
 
@@ -436,7 +463,7 @@ void translateCommand(String cmd){
         int j = i - 22;
         outputs[j] = getBit(i);
       }
-      sprintf(buffer, "%d%d%d%d%d%d%d %d%d%d%d%d%d%d %d%d%d%d%d%d%d", 
+      sprintf(buffer, "%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d", 
               outputs[0],outputs[1],outputs[2],outputs[3],
               outputs[4],outputs[5],outputs[6],outputs[7],
               outputs[8],outputs[9],outputs[10],outputs[11],
@@ -444,6 +471,9 @@ void translateCommand(String cmd){
               outputs[16],outputs[17],outputs[18],outputs[19],
               outputs[20]
               );
+      Serial.println(buffer);
+      Serial1.println(buffer);
+      Serial2.println(buffer);
       Serial3.println(buffer);
       delay(100);
     }
