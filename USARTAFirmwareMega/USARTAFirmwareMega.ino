@@ -51,7 +51,7 @@ void match_callback  (const char * match,          // matching string (not null-
 // Serial3 -> bt;    
 //
 // ******************************
-// Mapa de PIC y Puertos
+// Mapa de Conexiones
 // ******************************
 // Micro | Salidas
 //   A       0-7
@@ -65,8 +65,8 @@ SoftwareSerial port485(10, 11);     // RX = 10 and TX = 11
 AltSoftSerial  gpsPort;             // RX = 48 and TX = 46
 #define RS485_PIN 13                // Pin de control de red 485 
 #define CMD_LEN 20                  // Número de comandos de bajo nivel en el array 
-String responseIp = "192.168.1.74";
-String responsePort = "55056";
+String responseIp = "192.168.1.80";
+String responsePort = "54831";
 String methodFromUart = "";         // Funcion de alto nivel recibido desde cualquier UART
 int total = 0;                      // Total de comandos de bajo nivel generados a partir de funció de alto nivel
 unsigned long count;                // Contador coincidencias al validar reg exp
@@ -106,7 +106,7 @@ void setup() {
   Serial.println("--------------------------");
   Serial.println(" Inicializando USART A... ");
   Serial.println("--------------------------");
-  Serial.println(" Espera 15 segundos       ");
+  
   
   Serial3.println(" ");
   Serial3.println(" ");
@@ -116,8 +116,9 @@ void setup() {
   Serial3.println(" ");
   Serial3.println(" ");
 
-//  configGsm();
-  
+  configGsm();
+
+  Serial.println(" Espera 15 segundos       ");
   delay(15000);
   Serial.println("");
   Serial.print("IP: ");
@@ -536,7 +537,7 @@ void makeCommands(String cmd){
     // -----------------------------------------
     count = ms.GlobalMatch("setAllOut%([0-1]+%)", match_callback); 
     if(count == 1){ 
-      cmdsTo485[index] = String(cCmd) + "#";   
+      cmdsTo485[index] = String(cCmd) + "\r";   
     }
 
     // -----------------------------------------

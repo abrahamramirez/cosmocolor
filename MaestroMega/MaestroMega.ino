@@ -172,7 +172,7 @@ boolean isUsartB = false;
 // Interrupción cuando arriva dato USARTA
 // ---------------------------------------
 void serialEvent1() {
-  commands = Serial1.readStringUntil('#');
+  commands = Serial1.readStringUntil('\r');
   Serial.print("USART A data: ");
   Serial.print(commands);
   Serial.println();
